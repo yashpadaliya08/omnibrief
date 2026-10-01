@@ -41,3 +41,48 @@ $$\text{Composite Moat Score} = 25.5 + 27.6 + 14.0 + 17.8 = 84.9 \approx 85/100$
 
 ### Upgrade 3: Live Progressive Node Sprouting (SSE Streaming)
 - Stream Server-Sent Events (SSE) so that as each stage completes (Scout → Reasoning → Critic → Topology), nodes pop onto the canvas one by one.
+
+---
+
+## 5. Phase 1 Breakthrough Capabilities Audit
+
+### 1. ⚔️ Strategic War-Game Simulator (Counterfactual "What-If" Engine)
+- **Problem Solved:** Traditional due-diligence reports are static PDF snapshots that cannot answer "What happens if...?"
+- **Architecture:** Powered by `/api/wargame` route calling NVIDIA Nemotron-70B on Nebius Token Factory with heuristic shockwave fallbacks. Recalculates composite scores in real-time ($85 \rightarrow 71$ under aggressive price deflation, or $85 \rightarrow 97$ under open sovereign cloud pivot).
+- **Visual Shockwaves:** Custom canvas nodes dynamically render pulsating glow borders and badges (`⚠️ Squeezed Margin`, `🛡️ Fortified Moat`, `⚡ Disrupted`) with specific scenario notes.
+
+### 2. 🥊 Head-to-Head Clash Canvas (Dual-Root Gravitational Graph)
+- **Problem Solved:** Founders and CTOs do not evaluate companies in isolation—they evaluate trade-offs between two options (e.g. Linear vs Jira, Cursor vs Windsurf, Supabase vs Firebase).
+- **Architecture:** Dual-Root coordinate topology (`src/lib/graphMapper.ts`):
+  - Left Root (Entity A, Indigo) at $(x: 180, y: 320)$
+  - Right Root (Entity B, Rose) at $(x: 1040, y: 320)$
+  - Center Contested Cluster (`SharedClashNode`) at $x: 600$ with dual bezier animated edges connecting to both roots
+  - Outer Wings for unique architectural wedges and moats
+- **Battle Card Modal:** Includes interactive radar comparison comparing Latency, Enterprise Compliance, Pricing, and Developer Velocity with dimension winners and tactical wedges.
+
+### 3. 🔍 GitHub Repo Reverse-Architecture Ingestion (Code-to-Graph Grounding)
+- **Problem Solved:** Prevents speculation about backend architectures by directly grounding nodes in real source code.
+- **Architecture:** Built `repoInspector.ts` detecting GitHub repository URLs (e.g. `makeplane/plane`, `supabase/supabase`). Inspects manifests (`package.json`, `schema.prisma`, `docker-compose.yml`) to ground real concrete architecture stacks (ORM, database, cache, auth) directly with `📦 Grounded (Verified from package.json)` badges.
+
+---
+
+## 6. Phase 2 Breakthrough Capabilities Audit
+
+### 4. 💬 "Interrogate the Node" (Contextual Node Dialogue)
+- **Problem Solved:** Static due-diligence cards leave founders with unanswered questions about implementation patterns, migration bridges, or competitor vulnerabilities.
+- **Architecture:** Powered by `/api/interrogate` calling NVIDIA Nemotron-70B on Nebius Token Factory with surgical system prompting. Embedded directly into `NodeInspectorDrawer.tsx` via `NodeInterrogator.tsx`.
+- **Contextual Inquiries:** Provides dynamic suggested inquiry chips customized per node type:
+  - **Competitors:** Procurement moat bypass strategies & verified G2 vulnerabilities.
+  - **Tech Stack:** Production-ready TypeScript/SQL/WASM CRDT synchronization code patterns.
+  - **Moats:** Quantitative defensibility erosion tactics and tracking metrics.
+  - **White-Space:** 30-day tactical MVP roadmaps and pricing pass-through wedges.
+
+### 5. ⏳ Temporal Evolution Slider (Historical Market Shifts 2023–2026)
+- **Problem Solved:** Fast-moving software markets cannot be understood from a single static snapshot.
+- **Architecture:** Built `temporalEngine.ts` and `TemporalEvolutionBar.tsx`. Provides a scrubbable timeline slider with play/pause loop cycling through:
+  - **2023:** Incumbent Monolith Era (Jira 88% share, Linear early Series A, AWS RDS, Moat: 62/100).
+  - **2024:** Local-First CRDT & SQLite WASM Dawn (Linear launches offline sync, Plane 15k stars, Moat: 74/100).
+  - **2025:** Open Weights & AI Agent Surge (Cursor/Linear integration, edge routing, Moat: 81/100).
+  - **2026:** Active Sovereign Multi-Agent Zero-Latency Fabric (Nebius Token Factory GPU inference, Plane 30k+ stars, Moat: 85/100).
+
+

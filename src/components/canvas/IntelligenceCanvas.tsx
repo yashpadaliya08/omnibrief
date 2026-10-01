@@ -20,10 +20,15 @@ import { CompetitorNode } from './nodes/CompetitorNode';
 import { TechStackNode } from './nodes/TechStackNode';
 import { MoatNode } from './nodes/MoatNode';
 import { WhitespaceNode } from './nodes/WhitespaceNode';
+import { SharedClashNode } from './nodes/SharedClashNode';
 import { NodeInspectorDrawer } from './NodeInspectorDrawer';
-import { IntelligenceReport } from '@/types/omnibrief';
+import { WarGameController } from '@/components/wargame/WarGameController';
+import { HeadToHeadBattleCardModal } from '@/components/clash/HeadToHeadBattleCardModal';
+import { TemporalEvolutionBar } from './TemporalEvolutionBar';
+import { IntelligenceReport, WarGameScenario } from '@/types/omnibrief';
 import { buildGraphFromReport } from '@/lib/graphMapper';
-import { Compass, Maximize2, RotateCcw } from 'lucide-react';
+import { applyTemporalEvolution, EvolutionYear } from '@/lib/temporalEngine';
+import { Compass, Maximize2, Minimize2, RotateCcw, Swords } from 'lucide-react';
 
 const STATIC_NODE_TYPES = {
   rootEntity: RootEntityNode,
@@ -31,33 +36,57 @@ const STATIC_NODE_TYPES = {
   techStack: TechStackNode,
   moat: MoatNode,
   whitespace: WhitespaceNode,
+  sharedClash: SharedClashNode,
 };
 
 interface IntelligenceCanvasProps {
   report: IntelligenceReport;
   onRefresh?: () => void;
+  onApplyWarGame?: (scenario: WarGameScenario) => void;
+  onResetWarGame?: () => void;
+  nebiusApiKey?: string;
+  modelName?: string;
 }
 
-export const IntelligenceCanvas = React.memo(function IntelligenceCanvas({ report }: IntelligenceCanvasProps) {
-  const initialGraph = useMemo(() => buildGraphFromReport(report), [report]);
+export const IntelligenceCanvas = React.memo(function IntelligenceCanvas({
+  report,
+  onApplyWarGame,
+  onResetWarGame,
+  nebiusApiKey,
+  modelName,
+}: IntelligenceCanvasProps) {
+  const [evolutionYear, setEvolutionYear] = useState<EvolutionYear>(2026);
+  const activeReport = useMemo(() => applyTemporalEvolution(report, evolutionYear), [report, evolutionYear]);
+
+  const initialGraph = useMemo(() => buildGraphFromReport(activeReport), [activeReport]);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialGraph.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialGraph.edges);
 
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [battleCardOpen, setBattleCardOpen] = useState(false);
+  const [isFocusMode, setIsFocusMode] = useState(false);
   const flowInstanceRef = useRef<ReactFlowInstance | null>(null);
 
-  // Synchronize nodes and edges whenever report updates
+  // Synchronize nodes and edges whenever activeReport updates
   useEffect(() => {
-    const next = buildGraphFromReport(report);
+    const next = buildGraphFromReport(activeReport);
     setNodes(next.nodes);
     setEdges(next.edges);
     setSelectedNode(null);
     if (flowInstanceRef.current) {
       setTimeout(() => {
-        flowInstanceRef.current?.fitView({ padding: 0.1, minZoom: 0.65, maxZoom: 1.15 });
+        flowInstanceRef.current?.fitView({ padding: 0.12, minZoom: 0.65, maxZoom: 1.15 });
       }, 100);
     }
-  }, [report, setNodes, setEdges]);
+  }, [activeReport, setNodes, setEdges]);
+
+  // Re-fit canvas smoothly when entering or exiting Focus Mode
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      flowInstanceRef.current?.fitView({ padding: 0.12, minZoom: 0.65, maxZoom: 1.15 });
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [isFocusMode]);
 
   const onNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
     setSelectedNode(node);
@@ -69,7 +98,7 @@ export const IntelligenceCanvas = React.memo(function IntelligenceCanvas({ repor
 
   const handleFitView = useCallback(() => {
     if (flowInstanceRef.current) {
-      flowInstanceRef.current.fitView({ padding: 0.1, duration: 400 });
+      flowInstanceRef.current.fitView({ padding: 0.12, duration: 400 });
     }
   }, []);
 
@@ -80,7 +109,13 @@ export const IntelligenceCanvas = React.memo(function IntelligenceCanvas({ repor
   }, []);
 
   return (
-    <div className="relative w-full h-[760px] lg:h-[840px] rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-950/70 shadow-2xl backdrop-blur-md">
+    <div
+      className={
+        isFocusMode
+          ? 'fixed inset-0 z-50 w-screen h-screen bg-zinc-950 overflow-hidden'
+          : 'relative w-full h-[580px] sm:h-[640px] lg:h-[700px] rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-950/70 shadow-2xl backdrop-blur-md transition-all duration-300'
+      }
+    >
       {/* Top Overlay Bar */}
       <div className="absolute top-4 left-4 z-10 flex flex-wrap items-center gap-2 pointer-events-auto">
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900/90 border border-zinc-800 backdrop-blur-md text-xs font-mono text-zinc-300">
@@ -103,10 +138,46 @@ export const IntelligenceCanvas = React.memo(function IntelligenceCanvas({ repor
             <span className="w-2 h-2 rounded-full bg-emerald-500" /> White-Space
           </span>
         </div>
+
+        {/* Temporal Evolution Slider */}
+        <TemporalEvolutionBar currentYear={evolutionYear} onYearChange={setEvolutionYear} />
       </div>
 
       {/* Top Right Canvas Actions */}
       <div className="absolute top-4 right-4 z-10 flex items-center gap-2 pointer-events-auto">
+        {report.headToHead && (
+          <button
+            onClick={() => setBattleCardOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-900/80 hover:bg-purple-800 border border-purple-500/50 text-xs font-mono font-bold text-purple-200 transition-all shadow-lg cursor-pointer animate-pulse"
+            title="Open side-by-side comparative radar battle card"
+          >
+            <Swords className="w-3.5 h-3.5 text-purple-300" />
+            <span>🥊 Clash Battle Card</span>
+          </button>
+        )}
+
+        <button
+          onClick={() => setIsFocusMode(!isFocusMode)}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-mono font-bold transition-all shadow-lg cursor-pointer ${
+            isFocusMode
+              ? 'bg-indigo-600 text-white border-indigo-400 shadow-indigo-600/30'
+              : 'bg-zinc-900/90 hover:bg-zinc-800 border-zinc-800 text-zinc-300'
+          }`}
+          title={isFocusMode ? 'Exit Full-Screen Canvas' : 'Maximize Canvas to fit your screen'}
+        >
+          {isFocusMode ? (
+            <>
+              <Minimize2 className="w-3 h-3 text-white" />
+              <span>Exit Focus</span>
+            </>
+          ) : (
+            <>
+              <Maximize2 className="w-3 h-3 text-indigo-400" />
+              <span className="hidden sm:inline">Focus Canvas</span>
+            </>
+          )}
+        </button>
+
         <button
           onClick={handleFitView}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 text-xs font-mono text-zinc-300 transition-colors shadow-lg cursor-pointer"
@@ -136,10 +207,10 @@ export const IntelligenceCanvas = React.memo(function IntelligenceCanvas({ repor
         onNodeClick={onNodeClick}
         onInit={(instance) => {
           flowInstanceRef.current = instance;
-          instance.fitView({ padding: 0.1, minZoom: 0.65, maxZoom: 1.15 });
+          instance.fitView({ padding: 0.12, minZoom: 0.65, maxZoom: 1.15 });
         }}
         fitView
-        fitViewOptions={{ padding: 0.1, minZoom: 0.65, maxZoom: 1.15 }}
+        fitViewOptions={{ padding: 0.12, minZoom: 0.65, maxZoom: 1.15 }}
         minZoom={0.3}
         maxZoom={2.0}
         proOptions={{ hideAttribution: true }}
@@ -164,12 +235,35 @@ export const IntelligenceCanvas = React.memo(function IntelligenceCanvas({ repor
         />
       </ReactFlow>
 
+      {/* Floating Strategic War-Game Controller */}
+      {onApplyWarGame && onResetWarGame && (
+        <WarGameController
+          report={activeReport}
+          onApplyScenario={onApplyWarGame}
+          onResetScenario={onResetWarGame}
+          nebiusApiKey={nebiusApiKey}
+          modelName={modelName}
+          isDrawerOpen={!!selectedNode}
+        />
+      )}
+
       {/* Slide-in Inspector Drawer */}
       <NodeInspectorDrawer
         selectedNode={selectedNode}
-        report={report}
+        report={activeReport}
         onClose={handleCloseDrawer}
+        nebiusApiKey={nebiusApiKey}
+        modelName={modelName}
       />
+
+      {/* Head-to-Head Clash Battle Card Modal */}
+      {activeReport.headToHead && (
+        <HeadToHeadBattleCardModal
+          battleCard={activeReport.headToHead}
+          isOpen={battleCardOpen}
+          onClose={() => setBattleCardOpen(false)}
+        />
+      )}
     </div>
   );
 });

@@ -11,6 +11,8 @@ interface RootEntityNodeProps {
     verdictScore: number;
     modelUsed: string;
     citationsCount: number;
+    warGameDelta?: number;
+    warGameTitle?: string;
   };
 }
 
@@ -21,16 +23,28 @@ export const RootEntityNode = React.memo(function RootEntityNode({ data }: RootE
     return 'text-rose-400 bg-rose-950/70 border-rose-500/40';
   };
 
+  const isWarGameActive = typeof data.warGameDelta === 'number';
+
   return (
-    <div className="relative group min-w-[280px] max-w-[340px] rounded-2xl bg-zinc-950/90 border-2 border-indigo-500/60 p-5 shadow-2xl shadow-indigo-500/20 backdrop-blur-xl transition-all duration-300 hover:border-indigo-400 hover:shadow-indigo-500/30">
-      {/* Handles */}
-      <Handle type="source" position={Position.Top} className="!w-3 !h-3 !bg-indigo-400 !border-2 !border-zinc-950" />
-      <Handle type="source" position={Position.Bottom} className="!w-3 !h-3 !bg-indigo-400 !border-2 !border-zinc-950" />
-      <Handle type="source" position={Position.Left} className="!w-3 !h-3 !bg-indigo-400 !border-2 !border-zinc-950" />
-      <Handle type="source" position={Position.Right} className="!w-3 !h-3 !bg-indigo-400 !border-2 !border-zinc-950" />
+    <div className={`relative group min-w-[280px] max-w-[340px] rounded-2xl bg-zinc-950/90 border-2 ${
+      isWarGameActive
+        ? data.warGameDelta! >= 0
+          ? 'border-emerald-500 ring-2 ring-emerald-500/40 shadow-emerald-950/50'
+          : 'border-rose-500 ring-2 ring-rose-500/40 shadow-rose-950/50'
+        : 'border-indigo-500/60 shadow-indigo-500/20 hover:border-indigo-400'
+    } p-5 shadow-2xl backdrop-blur-xl transition-all duration-300`}>
+      {/* Explicit Cardinal Handles */}
+      <Handle id="root-top" type="source" position={Position.Top} className="!w-3 !h-3 !bg-indigo-400 !border-2 !border-zinc-950" />
+      <Handle id="root-bottom" type="source" position={Position.Bottom} className="!w-3 !h-3 !bg-indigo-400 !border-2 !border-zinc-950" />
+      <Handle id="root-left" type="source" position={Position.Left} className="!w-3 !h-3 !bg-indigo-400 !border-2 !border-zinc-950" />
+      <Handle id="root-right" type="source" position={Position.Right} className="!w-3 !h-3 !bg-indigo-400 !border-2 !border-zinc-950" />
 
       {/* Glowing Header Aura */}
-      <div className="absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-indigo-500 to-cyan-500 opacity-20 blur-sm group-hover:opacity-40 transition duration-500 pointer-events-none" />
+      <div className={`absolute -inset-0.5 rounded-2xl ${
+        isWarGameActive
+          ? data.warGameDelta! >= 0 ? 'bg-emerald-500 opacity-25' : 'bg-rose-500 opacity-25'
+          : 'bg-gradient-to-r from-indigo-500 to-cyan-500 opacity-20'
+      } blur-sm pointer-events-none`} />
 
       <div className="relative">
         <div className="flex items-center justify-between gap-2 mb-2">
@@ -43,6 +57,15 @@ export const RootEntityNode = React.memo(function RootEntityNode({ data }: RootE
             Moat Index: {data.verdictScore}/100
           </div>
         </div>
+
+        {isWarGameActive && (
+          <div className="mb-2 flex items-center justify-between px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-700/80 text-[10px] font-mono">
+            <span className="text-zinc-400">⚔️ War-Game Recalculated:</span>
+            <span className={data.warGameDelta! >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}>
+              {data.warGameDelta! >= 0 ? `+${data.warGameDelta}` : data.warGameDelta} pts
+            </span>
+          </div>
+        )}
 
         <h3 className="text-xl font-black tracking-tight text-white mb-1 group-hover:text-indigo-200 transition-colors">
           {data.title}
@@ -69,3 +92,4 @@ export const RootEntityNode = React.memo(function RootEntityNode({ data }: RootE
     </div>
   );
 });
+

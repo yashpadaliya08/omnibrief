@@ -22,10 +22,11 @@ import { IntelligenceReport } from '@/types/omnibrief';
 import { generateSynthesizedReport, OFFICIAL_NEBIUS_MODEL } from '@/lib/nebius';
 
 const PRESET_QUERIES = [
-  { label: 'Linear.app', query: 'Linear.app issue tracking and project management' },
-  { label: 'Cursor.sh', query: 'Cursor AI code editor and agentic IDE ecosystem' },
-  { label: 'Perplexity AI', query: 'Perplexity AI conversational answer engine' },
-  { label: 'Supabase', query: 'Supabase open source Firebase and Postgres platform' },
+  { label: 'Linear.app', query: 'Linear.app issue tracking and project management', category: 'single' },
+  { label: '🥊 Linear vs Jira', query: 'Linear vs Jira', category: 'clash' },
+  { label: '🥊 Cursor vs Windsurf', query: 'Cursor vs Windsurf', category: 'clash' },
+  { label: '🔍 github.com/makeplane/plane', query: 'https://github.com/makeplane/plane', category: 'repo' },
+  { label: '🔍 github.com/supabase/supabase', query: 'https://github.com/supabase/supabase', category: 'repo' },
 ];
 
 export default function HomePage() {
@@ -68,6 +69,20 @@ export default function HomePage() {
   const handleSaveConfig = (newConfig: { nebiusApiKey: string; tavilyApiKey: string; modelName: string }) => {
     setConfig(newConfig);
     localStorage.setItem('omnibrief_config', JSON.stringify(newConfig));
+  };
+
+  const handleApplyWarGame = (scenario: import('@/types/omnibrief').WarGameScenario) => {
+    setReport((prev) => ({
+      ...prev,
+      activeWarGame: scenario,
+    }));
+  };
+
+  const handleResetWarGame = () => {
+    setReport((prev) => ({
+      ...prev,
+      activeWarGame: null,
+    }));
   };
 
   const runAnalysis = async (targetQuery: string) => {
@@ -198,7 +213,7 @@ export default function HomePage() {
               <div className="relative flex items-center">
                 <input
                   type="text"
-                  placeholder="Enter any product, competitor, or domain (e.g., Linear, Cursor, Supabase)..."
+                  placeholder="Enter product, clash (e.g. Linear vs Jira), or GitHub repo (e.g. makeplane/plane)..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   disabled={loading}
@@ -227,7 +242,7 @@ export default function HomePage() {
 
             {/* Presets */}
             <div className="flex flex-wrap items-center justify-center gap-2 pt-2 text-xs">
-              <span className="text-zinc-500">Quick Try:</span>
+              <span className="text-zinc-500 font-mono text-[11px]">Quick Try:</span>
               {PRESET_QUERIES.map((preset) => (
                 <button
                   key={preset.label}
@@ -235,7 +250,13 @@ export default function HomePage() {
                     setQuery(preset.query);
                     runAnalysis(preset.query);
                   }}
-                  className="px-3 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 transition-all cursor-pointer hover:border-zinc-700"
+                  className={`px-3 py-1.5 rounded-xl text-xs font-mono transition-all cursor-pointer border ${
+                    preset.category === 'clash'
+                      ? 'bg-purple-950/40 hover:bg-purple-900/60 text-purple-300 border-purple-500/40 hover:border-purple-400'
+                      : preset.category === 'repo'
+                      ? 'bg-cyan-950/40 hover:bg-cyan-900/60 text-cyan-300 border-cyan-500/40 hover:border-cyan-400'
+                      : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border-zinc-800 hover:border-zinc-700'
+                  }`}
                 >
                   {preset.label}
                 </button>
@@ -332,14 +353,28 @@ export default function HomePage() {
         {/* Active Content View */}
         <section className="space-y-8">
           {activeTab === 'canvas' && (
-            <IntelligenceCanvas report={report} onRefresh={() => runAnalysis(report.query)} />
+            <IntelligenceCanvas
+              report={report}
+              onRefresh={() => runAnalysis(report.query)}
+              onApplyWarGame={handleApplyWarGame}
+              onResetWarGame={handleResetWarGame}
+              nebiusApiKey={config.nebiusApiKey}
+              modelName={config.modelName}
+            />
           )}
 
           {activeTab === 'dossier' && <ExecutiveDossier report={report} />}
 
           {activeTab === 'both' && (
             <div className="space-y-8">
-              <IntelligenceCanvas report={report} onRefresh={() => runAnalysis(report.query)} />
+              <IntelligenceCanvas
+                report={report}
+                onRefresh={() => runAnalysis(report.query)}
+                onApplyWarGame={handleApplyWarGame}
+                onResetWarGame={handleResetWarGame}
+                nebiusApiKey={config.nebiusApiKey}
+                modelName={config.modelName}
+              />
               <ExecutiveDossier report={report} />
             </div>
           )}

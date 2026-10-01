@@ -1,6 +1,8 @@
-import { IntelligenceReport, TavilySource, MoatRubric, VerificationMetrics } from '@/types/omnibrief';
+import { IntelligenceReport, TavilySource, MoatRubric, VerificationMetrics, HeadToHeadBattleCard } from '@/types/omnibrief';
+import { isHeadToHeadQuery, generateHeadToHeadBattleCard } from './clashEngine';
+import { isGitHubRepoUrl, getGroundedTechStackSync } from './repoInspector';
 
-export const OFFICIAL_NEBIUS_MODEL = 'nvidia/Llama-3.1-Nemotron-70B-Instruct-HF';
+export const OFFICIAL_NEBIUS_MODEL = 'nvidia/Nemotron-3-Ultra-550b-a55b';
 const NEBIUS_BASE_URL = process.env.NEBIUS_BASE_URL || 'https://api.tokenfactory.nebius.com/v1';
 
 export async function callNebiusNemotron(
@@ -58,6 +60,10 @@ export function generateSynthesizedReport(
   const cleanQ = query.trim();
   const lower = cleanQ.toLowerCase();
 
+  const clashCheck = isHeadToHeadQuery(cleanQ);
+  const repoCheck = isGitHubRepoUrl(cleanQ);
+  let headToHeadBattleCard: HeadToHeadBattleCard | null = null;
+
   let entity = cleanQ;
   let tagline = 'Autonomous Multi-Agent Due-Diligence & Architecture Teardown';
   let dataGravityScore = 85;
@@ -65,7 +71,18 @@ export function generateSynthesizedReport(
   let regulatoryScore = 70;
   let networkEffectsScore = 89;
 
-  if (lower.includes('linear')) {
+  if (clashCheck.isClash) {
+    entity = `${clashCheck.entityA} vs ${clashCheck.entityB}`;
+    tagline = `Dual-Root Head-to-Head Clash & Competitive Gravitational Graph`;
+    headToHeadBattleCard = generateHeadToHeadBattleCard(clashCheck.entityA, clashCheck.entityB);
+  } else if (repoCheck.isRepo) {
+    entity = `${repoCheck.owner}/${repoCheck.repo}`;
+    tagline = `GitHub Repo Reverse-Architecture Grounded Due-Diligence (${repoCheck.cleanUrl})`;
+    dataGravityScore = 88;
+    switchingCostsScore = 84;
+    regulatoryScore = 90;
+    networkEffectsScore = 87;
+  } else if (lower.includes('linear')) {
     entity = 'Linear.app';
     tagline = 'High-velocity issue tracking & product management ecosystem';
     dataGravityScore = 85;
@@ -210,7 +227,7 @@ export function generateSynthesizedReport(
         weaknesses: ['Less aggressive local-first speed than Linear', 'Limited customization compared to Jira'],
       },
     ],
-    techStackAnalysis: [
+    techStackAnalysis: repoCheck.isRepo ? getGroundedTechStackSync(repoCheck.owner, repoCheck.repo) : [
       {
         id: 'tech_1',
         component: 'Data Layer & Synchronization',
@@ -355,5 +372,6 @@ export function generateSynthesizedReport(
       'Pricing Fluctuations: SaaS pricing tiers update frequently; estimates should be confirmed directly with vendor sales.',
       'Competitor Lifecycle: Tool availability changes (e.g. acquisitions and shutdowns); verified as of October 2026.',
     ],
+    headToHead: headToHeadBattleCard,
   };
 }

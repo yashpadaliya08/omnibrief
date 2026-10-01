@@ -1,5 +1,6 @@
 export type MoatStrengthLevel = 'Moderate' | 'Strong' | 'Dominant';
 export type ExternalThreatLevel = 'Low' | 'Medium' | 'Elevated';
+export type NodeWarGameImpact = 'strengthened' | 'squeezed' | 'disrupted' | 'neutral';
 
 export interface TavilySource {
   title: string;
@@ -20,7 +21,7 @@ export interface CompetitorData {
   weaknesses: string[];
   url?: string;
   category: 'direct' | 'indirect' | 'emerging';
-  lastVerified: string; // e.g. "October 2026"
+  lastVerified: string;
   status: 'active' | 'sunset' | 'acquired';
 }
 
@@ -30,17 +31,20 @@ export interface TechStackItem {
   competitorChoice: string;
   recommendedOpenStack: string;
   whyItMatters: string;
-  scalabilityRating: number; // 1 to 5
+  scalabilityRating: number;
+  isRepoGrounded?: boolean;
+  groundedSourceFile?: string;
+  repoUrl?: string;
 }
 
 export interface ThreatMoatItem {
   id: string;
   factor: string;
-  moatStrengthScore: number; // 0 to 100
+  moatStrengthScore: number;
   moatStrengthLevel: MoatStrengthLevel;
   externalThreatLevel: ExternalThreatLevel;
-  weightPercentage: number; // e.g. 30 for 30%
-  pointContribution: number; // e.g. 25.5
+  weightPercentage: number;
+  pointContribution: number;
   details: string;
   mitigation: string;
 }
@@ -55,15 +59,15 @@ export interface WhitespaceOpportunity {
 
 export interface MoatRubricPillar {
   name: string;
-  score: number; // 0 to 100
-  weight: number; // 0.0 to 1.0
+  score: number;
+  weight: number;
   pointsContributed: number;
   evidence: string;
   riskSummary: string;
 }
 
 export interface MoatRubric {
-  compositeScore: number; // Reconciled 0 to 100
+  compositeScore: number;
   formulaExplanation: string;
   dataGravity: MoatRubricPillar;
   switchingCosts: MoatRubricPillar;
@@ -89,13 +93,43 @@ export interface AgentExecutionStep {
   mode?: 'Live Nebius GPU' | 'Deterministic Baseline';
 }
 
+export interface WarGameScenario {
+  id: string;
+  title: string;
+  prompt: string;
+  compositeDelta: number; // e.g. -11 or +14
+  newCompositeScore: number;
+  casualtyReport: string;
+  recommendedTactics: string[];
+  nodeImpacts: {
+    [nodeId: string]: {
+      status: NodeWarGameImpact;
+      note: string;
+    };
+  };
+}
+
+export interface HeadToHeadBattleCard {
+  entityA: string;
+  entityB: string;
+  dimensions: Array<{
+    dimension: string;
+    scoreA: number;
+    scoreB: number;
+    winner: 'A' | 'B' | 'Tie';
+    analysis: string;
+  }>;
+  overallAdvantage: string;
+  tacticalWedge: string;
+}
+
 export interface IntelligenceReport {
   id: string;
   query: string;
   targetEntity: string;
   tagline: string;
   createdAt: string;
-  verdictScore: number; // Composite Moat Viability Index (0 to 100)
+  verdictScore: number;
   moatRubric: MoatRubric;
   verificationMetrics: VerificationMetrics;
   executiveSummary: string;
@@ -110,6 +144,8 @@ export interface IntelligenceReport {
   limitationsAndRisks: string[];
   executionMode: 'Live Nebius Token Factory' | 'Deterministic Baseline Mode';
   measuredLatencyMs?: number;
+  activeWarGame?: WarGameScenario | null;
+  headToHead?: HeadToHeadBattleCard | null;
 }
 
-export type CanvasNodeType = 'rootEntity' | 'competitor' | 'techStack' | 'moat' | 'whitespace';
+export type CanvasNodeType = 'rootEntity' | 'competitor' | 'techStack' | 'moat' | 'whitespace' | 'sharedClash';

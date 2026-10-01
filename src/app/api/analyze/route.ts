@@ -146,6 +146,7 @@ Perform deep technical due-diligence, architecture trade-off evaluation, and cal
             limitationsAndRisks: parsed.limitationsAndRisks || fallbackSample.limitationsAndRisks,
             executionMode: 'Live Nebius Token Factory',
             measuredLatencyMs: nebiusLatency,
+            headToHead: fallbackSample.headToHead,
             executionSteps: [
               {
                 id: 's1',
