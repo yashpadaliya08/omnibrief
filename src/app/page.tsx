@@ -10,11 +10,9 @@ import {
   Cpu,
   Layers,
   ArrowRight,
-  ExternalLink,
-  ShieldCheck,
-  CheckCircle2,
   RefreshCw,
   Zap,
+  CheckCircle2,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -61,7 +59,7 @@ export default function HomePage() {
     ])
   );
 
-  const [currentStepIndex, setCurrentStepIndex] = useState(3);
+  const [currentStepIndex, setCurrentStepIndex] = useState(4);
 
   // Load saved credentials from localStorage
   useEffect(() => {
@@ -88,8 +86,9 @@ export default function HomePage() {
 
     try {
       // Step simulation for visual agent orchestration feedback
-      const stepTimer1 = setTimeout(() => setCurrentStepIndex(2), 1400);
-      const stepTimer2 = setTimeout(() => setCurrentStepIndex(3), 2800);
+      const stepTimer1 = setTimeout(() => setCurrentStepIndex(2), 1200);
+      const stepTimer2 = setTimeout(() => setCurrentStepIndex(3), 2400);
+      const stepTimer3 = setTimeout(() => setCurrentStepIndex(4), 3600);
 
       const res = await fetch('/api/analyze', {
         method: 'POST',
@@ -104,12 +103,13 @@ export default function HomePage() {
 
       clearTimeout(stepTimer1);
       clearTimeout(stepTimer2);
+      clearTimeout(stepTimer3);
 
       if (res.ok) {
         const data = await res.json();
         if (data.report) {
           setReport(data.report);
-          setCurrentStepIndex(3);
+          setCurrentStepIndex(4);
           confetti({
             particleCount: 50,
             spread: 60,
@@ -188,15 +188,15 @@ export default function HomePage() {
           <div className="relative max-w-3xl mx-auto text-center space-y-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono bg-zinc-800/80 border border-zinc-700/60 text-zinc-300">
               <Zap className="w-3.5 h-3.5 text-amber-400" />
-              <span>Multi-Agent Swarm: Tavily Search + Nemotron Reasoning on Nebius</span>
+              <span>4-Stage Multi-Agent Swarm: Scout → Reasoning → Critic → Topology</span>
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
-              Instant Competitive & <span className="bg-gradient-to-r from-indigo-400 via-cyan-300 to-emerald-400 bg-clip-text text-transparent">Architecture Due Diligence</span>
+              Verified Competitive & <span className="bg-gradient-to-r from-indigo-400 via-cyan-300 to-emerald-400 bg-clip-text text-transparent">Architecture Due Diligence</span>
             </h1>
 
             <p className="text-sm sm:text-base text-zinc-400 leading-relaxed max-w-2xl mx-auto">
-              Synthesize competitor pricing, architectural bottlenecks, defensibility moats, and open cloud wedges in seconds.
+              Synthesize competitor pricing, architectural bottlenecks, and a 4-pillar defensibility moat rubric in under a minute on open infrastructure.
             </p>
 
             {/* Input Form */}
@@ -249,32 +249,40 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Multi-Agent Progress Bar (Active when loading) */}
+          {/* 4-Stage Multi-Agent Progress Stepper (Active when loading) */}
           {loading && (
-            <div className="mt-8 pt-6 border-t border-zinc-800/80 max-w-2xl mx-auto">
-              <div className="grid grid-cols-3 gap-3 text-xs font-mono">
+            <div className="mt-8 pt-6 border-t border-zinc-800/80 max-w-3xl mx-auto">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs font-mono">
                 <div className={`p-3 rounded-xl border ${currentStepIndex >= 1 ? 'bg-indigo-950/40 border-indigo-500/40 text-indigo-300' : 'bg-zinc-900 border-zinc-800 text-zinc-500'}`}>
                   <div className="flex items-center gap-1.5 font-bold mb-1">
                     <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
-                    <span>Stage 1: Scout</span>
+                    <span>1. Scout</span>
                   </div>
-                  <p className="text-[11px] text-zinc-400">Tavily Deep Web Search</p>
+                  <p className="text-[10px] text-zinc-400">Tavily Search</p>
                 </div>
 
                 <div className={`p-3 rounded-xl border ${currentStepIndex >= 2 ? 'bg-cyan-950/40 border-cyan-500/40 text-cyan-300' : 'bg-zinc-900 border-zinc-800 text-zinc-500'}`}>
                   <div className="flex items-center gap-1.5 font-bold mb-1">
                     <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                    <span>Stage 2: Reasoning</span>
+                    <span>2. Reasoning</span>
                   </div>
-                  <p className="text-[11px] text-zinc-400">Nebius Nemotron 3 Ultra</p>
+                  <p className="text-[10px] text-zinc-400">Nemotron 3 Ultra</p>
                 </div>
 
                 <div className={`p-3 rounded-xl border ${currentStepIndex >= 3 ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300' : 'bg-zinc-900 border-zinc-800 text-zinc-500'}`}>
                   <div className="flex items-center gap-1.5 font-bold mb-1">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>Stage 3: Graph</span>
+                    <span>3. Critic</span>
                   </div>
-                  <p className="text-[11px] text-zinc-400">XYFlow Topology Compiler</p>
+                  <p className="text-[10px] text-zinc-400">Citation Check</p>
+                </div>
+
+                <div className={`p-3 rounded-xl border ${currentStepIndex >= 4 ? 'bg-purple-950/40 border-purple-500/40 text-purple-300' : 'bg-zinc-900 border-zinc-800 text-zinc-500'}`}>
+                  <div className="flex items-center gap-1.5 font-bold mb-1">
+                    <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+                    <span>4. Topology</span>
+                  </div>
+                  <p className="text-[10px] text-zinc-400">XYFlow Nodes</p>
                 </div>
               </div>
             </div>
@@ -321,7 +329,9 @@ export default function HomePage() {
               {report.targetEntity}
             </span>
             <span className="text-zinc-500">|</span>
-            <span className="text-emerald-400 font-bold">Defensibility: {report.verdictScore}/100</span>
+            <span className="text-emerald-400 font-bold">Moat Score: {report.verdictScore}/100</span>
+            <span className="text-zinc-500">|</span>
+            <span className="text-indigo-400 font-bold">Critic Verified ({report.citationConfidenceScore}%)</span>
           </div>
         </section>
 
