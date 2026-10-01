@@ -1,0 +1,130 @@
+'use client';
+
+import React, { useMemo, useState, useEffect } from 'react';
+import {
+  ReactFlow,
+  Background,
+  Controls,
+  MiniMap,
+  useNodesState,
+  useEdgesState,
+  Node,
+  Edge,
+  BackgroundVariant,
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
+
+import { RootEntityNode } from './nodes/RootEntityNode';
+import { CompetitorNode } from './nodes/CompetitorNode';
+import { TechStackNode } from './nodes/TechStackNode';
+import { MoatNode } from './nodes/MoatNode';
+import { WhitespaceNode } from './nodes/WhitespaceNode';
+import { NodeInspectorDrawer } from './NodeInspectorDrawer';
+import { IntelligenceReport } from '@/types/omnibrief';
+import { buildGraphFromReport } from '@/lib/graphMapper';
+import { Compass, Filter, RefreshCcw } from 'lucide-react';
+
+interface IntelligenceCanvasProps {
+  report: IntelligenceReport;
+  onRefresh?: () => void;
+}
+
+export function IntelligenceCanvas({ report, onRefresh }: IntelligenceCanvasProps) {
+  const nodeTypes = useMemo(
+    () => ({
+      rootEntity: RootEntityNode,
+      competitor: CompetitorNode,
+      techStack: TechStackNode,
+      moat: MoatNode,
+      whitespace: WhitespaceNode,
+    }),
+    []
+  );
+
+  const initialGraph = useMemo(() => buildGraphFromReport(report), [report]);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialGraph.nodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialGraph.edges);
+
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+
+  // Update nodes and edges whenever report changes
+  useEffect(() => {
+    const next = buildGraphFromReport(report);
+    setNodes(next.nodes);
+    setEdges(next.edges);
+    setSelectedNode(null);
+  }, [report, setNodes, setEdges]);
+
+  const onNodeClick = (_: React.MouseEvent, node: Node) => {
+    setSelectedNode(node);
+  };
+
+  return (
+    <div className="relative w-full h-[750px] lg:h-[820px] rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-950/70 shadow-2xl backdrop-blur-md">
+      {/* Top Overlay Bar */}
+      <div className="absolute top-4 left-4 z-10 flex flex-wrap items-center gap-2 pointer-events-auto">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900/90 border border-zinc-800 backdrop-blur-md text-xs font-mono text-zinc-300">
+          <Compass className="w-3.5 h-3.5 text-indigo-400" />
+          <span>Canvas View: Relational Multi-Agent Topology</span>
+        </div>
+
+        {/* Legend pills */}
+        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900/90 border border-zinc-800 backdrop-blur-md text-[11px]">
+          <span className="flex items-center gap-1.5 text-rose-400 font-semibold">
+            <span className="w-2 h-2 rounded-full bg-rose-500" /> Competitors
+          </span>
+          <span className="flex items-center gap-1.5 text-cyan-400 font-semibold">
+            <span className="w-2 h-2 rounded-full bg-cyan-500" /> Architecture
+          </span>
+          <span className="flex items-center gap-1.5 text-amber-400 font-semibold">
+            <span className="w-2 h-2 rounded-full bg-amber-500" /> Moats / Risks
+          </span>
+          <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" /> White-Space
+          </span>
+        </div>
+      </div>
+
+      {/* Main Flow Canvas */}
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        nodeTypes={nodeTypes}
+        onNodeClick={onNodeClick}
+        fitView
+        fitViewOptions={{ padding: 0.15 }}
+        minZoom={0.2}
+        maxZoom={1.8}
+        proOptions={{ hideAttribution: true }}
+      >
+        <Background variant={BackgroundVariant.Dots} gap={24} size={1.5} color="#27272a" />
+        <Controls
+          className="!bg-zinc-900/90 !border !border-zinc-800 !rounded-xl !p-1 !fill-zinc-400 shadow-xl"
+        />
+        <MiniMap
+          nodeStrokeWidth={3}
+          zoomable
+          pannable
+          className="!bg-zinc-950/80 !border !border-zinc-800 !rounded-xl shadow-xl hidden md:block"
+          nodeColor={(n) => {
+            if (n.type === 'rootEntity') return '#6366f1';
+            if (n.type === 'competitor') return '#f43f5e';
+            if (n.type === 'techStack') return '#06b6d4';
+            if (n.type === 'moat') return '#f59e0b';
+            if (n.type === 'whitespace') return '#10b981';
+            return '#71717a';
+          }}
+        />
+      </ReactFlow>
+
+      {/* Slide-in Inspector Drawer */}
+      <NodeInspectorDrawer
+        selectedNode={selectedNode}
+        report={report}
+        onClose={() => setSelectedNode(null)}
+      />
+    </div>
+  );
+}
