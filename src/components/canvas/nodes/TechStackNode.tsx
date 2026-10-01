@@ -25,7 +25,7 @@ export const TechStackNode = React.memo(function TechStackNode({ data }: TechSta
       warGameStyle.borderClass || 'border-cyan-500/40 hover:border-cyan-400'
     } p-4 shadow-xl shadow-cyan-950/20 backdrop-blur-md transition-all duration-300 hover:scale-[1.02]`}>
       <Handle id="tech-target" type="target" position={Position.Top} className="!w-2.5 !h-2.5 !bg-cyan-400 !border-2 !border-zinc-950" />
-      <Handle id="tech-left" type="source" position={Position.Left} className="!w-2.5 !h-2.5 !bg-cyan-400 !border-2 !border-zinc-950" />
+      <Handle id="tech-left" type="target" position={Position.Left} className="!w-2.5 !h-2.5 !bg-cyan-400 !border-2 !border-zinc-950" />
       <Handle id="tech-right" type="source" position={Position.Right} className="!w-2.5 !h-2.5 !bg-cyan-400 !border-2 !border-zinc-950" />
 
       <div className="flex items-center justify-between gap-2 mb-2">

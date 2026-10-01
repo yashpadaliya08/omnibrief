@@ -38,9 +38,10 @@ export function buildGraphFromReport(report: IntelligenceReport): { nodes: Node[
     return impacts[id] || impacts[fallbackKey] || impacts[`node_${id}`] || undefined;
   };
 
-  // 2. Competitors (Top Row - 3 cards centered above Root)
-  const compStartX = 70;
-  const compSpacingX = 390;
+  // 2. Competitors (Top Row - dynamically centered above Root)
+  const numComps = Math.max(1, report.competitors.length);
+  const compSpacingX = 350;
+  const compStartX = rootX - ((numComps - 1) * compSpacingX) / 2;
   const compStartY = 10;
 
   report.competitors.forEach((comp, idx) => {
@@ -74,9 +75,10 @@ export function buildGraphFromReport(report: IntelligenceReport): { nodes: Node[
     });
   });
 
-  // 3. Tech Stack Architecture (Bottom Row - 4 cards with neat gaps)
-  const techStartX = -30;
-  const techSpacingX = 320;
+  // 3. Tech Stack Architecture (Bottom Row - dynamically centered below Root)
+  const numTech = Math.max(1, report.techStackAnalysis.length);
+  const techSpacingX = 310;
+  const techStartX = rootX - ((numTech - 1) * techSpacingX) / 2;
   const techStartY = 640;
 
   report.techStackAnalysis.forEach((tech, idx) => {
@@ -109,10 +111,13 @@ export function buildGraphFromReport(report: IntelligenceReport): { nodes: Node[
     });
   });
 
-  // 4. Moats & Defensibility Pillars (Left Column - 4 cards stacked with clean gaps)
-  const moatStartX = -260;
-  const moatStartY = 120;
-  const moatSpacingY = 175;
+  // 4. Moats & Defensibility Pillars (Left Column - dynamically centered vertically)
+  const numMoats = Math.max(1, report.threatMoatMatrix.length);
+  const moatSpacingY = 170;
+  const moatStartY = (rootY + 50) - ((numMoats - 1) * moatSpacingY) / 2;
+  // Ensure left column doesn't collide with wide top/bottom rows
+  const minSpreadLeft = Math.min(-260, compStartX - 330, techStartX - 330);
+  const moatStartX = Math.min(-260, minSpreadLeft);
 
   report.threatMoatMatrix.forEach((moat, idx) => {
     const moatNodeId = `node_${moat.id}`;
@@ -144,10 +149,16 @@ export function buildGraphFromReport(report: IntelligenceReport): { nodes: Node[
     });
   });
 
-  // 5. Market Whitespace Opportunities (Right Column - 3 cards stacked)
-  const wsStartX = 1240;
-  const wsStartY = 180;
-  const wsSpacingY = 200;
+  // 5. Market Whitespace Opportunities (Right Column - dynamically centered vertically)
+  const numWs = Math.max(1, report.marketWhitespace.length);
+  const wsSpacingY = 190;
+  const wsStartY = (rootY + 50) - ((numWs - 1) * wsSpacingY) / 2;
+  const maxSpreadRight = Math.max(
+    1200,
+    compStartX + (numComps - 1) * compSpacingX + 330,
+    techStartX + (numTech - 1) * techSpacingX + 330
+  );
+  const wsStartX = Math.max(1200, maxSpreadRight);
 
   report.marketWhitespace.forEach((ws, idx) => {
     const wsNodeId = `node_${ws.id}`;

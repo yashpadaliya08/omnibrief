@@ -100,10 +100,10 @@ export function ApiConfigModal({ isOpen, onClose, onSave, currentConfig }: ApiCo
               onChange={(e) => setModel(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-white font-mono focus:outline-none focus:border-cyan-500 transition-colors"
             >
-              <option value="nvidia/Llama-3.1-Nemotron-70B-Instruct-HF">nvidia/Llama-3.1-Nemotron-70B-Instruct-HF (Recommended)</option>
-              <option value="nvidia/nemotron-4-340b-instruct">nvidia/nemotron-4-340b-instruct (Ultra Reasoning)</option>
-              <option value="meta-llama/Meta-Llama-3.1-70B-Instruct">meta-llama/Meta-Llama-3.1-70B-Instruct</option>
-              <option value="meta-llama/Meta-Llama-3.1-8B-Instruct">meta-llama/Meta-Llama-3.1-8B-Instruct (Fast Nano)</option>
+              <option value="nvidia/Nemotron-3_5-Lightning">nvidia/Nemotron-3_5-Lightning (Recommended — Sub-500ms)</option>
+              <option value="nvidia/Nemotron-3-Ultra-550b-a55b">nvidia/Nemotron-3-Ultra-550b-a55b (Deep Reasoning 550B)</option>
+              <option value="nvidia/nemotron-3-super-120b-a12b">nvidia/nemotron-3-super-120b-a12b (Balanced 120B)</option>
+              <option value="nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B">nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B (Fast Edge Nano)</option>
             </select>
           </div>
 

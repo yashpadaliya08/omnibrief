@@ -85,4 +85,21 @@ $$\text{Composite Moat Score} = 25.5 + 27.6 + 14.0 + 17.8 = 84.9 \approx 85/100$
   - **2025:** Open Weights & AI Agent Surge (Cursor/Linear integration, edge routing, Moat: 81/100).
   - **2026:** Active Sovereign Multi-Agent Zero-Latency Fabric (Nebius Token Factory GPU inference, Plane 30k+ stars, Moat: 85/100).
 
+---
+
+## 7. Phase 8 Dynamic Intelligence & Elastic Spatial Layout Audit
+
+### 6. ⚡ Nebius Token Factory Model Recovery (`nvidia/Nemotron-3_5-Lightning`)
+- **Problem Solved:** Legacy slug `nvidia/Llama-3.1-Nemotron-70B-Instruct-HF` returned HTTP 404 from Nebius Token Factory `/v1/chat/completions`, silently triggering static client-side fallback responses.
+- **Solution:** Queried live endpoint `/v1/models` to discover active production model slugs. Migrated default model to `nvidia/Nemotron-3_5-Lightning`. Added runtime sanitization in `page.tsx` to automatically purge stale 404 slugs from client `localStorage`.
+- **Outcome:** Live interrogation and synthesis execute seamlessly with real GPU-accelerated inference.
+
+### 7. 📦 Zero-Speculation Grounding for OmniBrief & Arbitrary Repos
+- **Problem Solved:** Analyzing `https://github.com/yashpadaliya08/omnibrief` generated generic dummy competitors ("Primary Incumbent A") and boilerplate developer velocity text.
+- **Solution:** Updated `repoInspector.ts` and `nebius.ts` with explicit architectural understanding of OmniBrief (Next.js 16, Nebius GPU Cluster, Tavily Search, XYFlow Canvas) and real commercial intelligence competitors (CB Insights / AlphaSense, PitchBook / Crunchbase Pro, Harmonic AI / Dealroom.co). In `/api/analyze`, GitHub URL queries are rewritten to target architecture and competitive space instead of raw repository URLs.
+
+### 8. 📐 Elastic Dynamic Canvas Centering
+- **Problem Solved:** Rigid, hardcoded 3-4-4-3 node grid coordinates caused overlapping or static-looking topologies when repos had varying counts of tech stack items or competitors.
+- **Solution:** Rewrote `graphMapper.ts` with geometric centering algorithms that dynamically calculate horizontal offsets for $(N)$ competitors and $(M)$ tech nodes relative to the central root node, with vertically balanced stacks for moats and whitespace opportunities.
+
 

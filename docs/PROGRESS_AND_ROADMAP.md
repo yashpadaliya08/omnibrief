@@ -55,6 +55,12 @@
 - [x] **Dockable Bottom War-Game Bar:** Compacted `WarGameController.tsx` into a sleek collapsible bottom shelf that defaults to collapsed state, shows real-time score delta badges, and auto-minimizes when opening the node inspector to prevent visual overlap.
 - [x] **Focus Canvas Mode (Fullscreen) & Small-Screen Responsiveness:** Added a 1-click **"Focus Canvas"** button in the canvas toolbar that expands the workspace to full viewport height (`calc(100vh - 80px)`), perfect for laptops (`1422×659`) without manual window resizing. Compacted default canvas height to `h-[580px] sm:h-[640px] lg:h-[700px]` with automatic viewport fitting.
 
+### Phase 8: Dynamic Live Intelligence & Elastic Spatial Layout
+- [x] **Active Nebius Model Alignment (`nvidia/Nemotron-3_5-Lightning`):** Resolved 404 API errors caused by deprecated model slug by syncing with active Nebius Token Factory models (`nvidia/Nemotron-3_5-Lightning`). Added automated client-side `localStorage` migration in `page.tsx` so user sessions seamlessly upgrade to the live model without manual resets.
+- [x] **Verified Zero-Speculation Repo Grounding (`omnibrief`):** Enriched `repoInspector.ts` and `nebius.ts` with true architecture grounding for `yashpadaliya08/omnibrief` (Next.js 16 App Router, Nebius Token Factory GPU Cluster, Tavily Search, XYFlow Spatial Graph) and real competitive landscape (CB Insights / AlphaSense, PitchBook / Crunchbase Pro, Harmonic AI / Dealroom.co).
+- [x] **Elastic Relational Canvas Layout:** Completely replaced rigid 3-4-4-3 node positioning in `graphMapper.ts` with dynamic mathematical centering. Automatically scales and centers variable counts of competitors (top), tech stack components (bottom), defensibility moats (left), and white-space opportunities (right) with zero node overlap.
+- [x] **Live Unescaped Markdown Interrogation:** Fixed JSON envelope extraction and passed `forceJson: false` in `/api/interrogate` to ensure live Nebius responses render beautiful formatted markdown with headers, bullet points, and code blocks in real time.
+
 ---
 
 ## 3. Upcoming Enhancements (Roadmap)

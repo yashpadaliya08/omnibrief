@@ -40,7 +40,7 @@ Provide a tactical, executive-level answer strictly focused on this node's impli
 
     // Attempt live Nebius Nemotron call
     if (nebiusApiKey || process.env.NEBIUS_API_KEY) {
-      const { rawJson, latencyMs } = await callNebiusNemotron(userPrompt, systemPrompt, nebiusApiKey, effectiveModel);
+      const { rawJson, latencyMs } = await callNebiusNemotron(userPrompt, systemPrompt, nebiusApiKey, effectiveModel, false);
       if (rawJson) {
         let cleanText = rawJson.trim();
         try {
@@ -65,7 +65,7 @@ Provide a tactical, executive-level answer strictly focused on this node's impli
 
         return NextResponse.json({
           answer: cleanText,
-          source: 'Live Nebius Token Factory GPU (NVIDIA Nemotron-70B)',
+          source: `Live Nebius Token Factory GPU (${effectiveModel.split('/').pop()})`,
           latencyMs,
         });
       }
@@ -75,7 +75,20 @@ Provide a tactical, executive-level answer strictly focused on this node's impli
     const qLower = question.toLowerCase();
     let tacticalAnswer = '';
 
-    if (qLower.includes('procurement') || qLower.includes('bypass') || qLower.includes('startup')) {
+    if (qLower.includes('saas') || qLower.includes('worth') || qLower.includes('monetiz') || qLower.includes('business model')) {
+      tacticalAnswer = `### Commercial SaaS Viability Thesis for ${targetEntity}
+
+**1. Target ICP & Willingness to Pay:**
+- **Primary Buyers:** VC Investment Associates, Corporate Development (M&A) Teams, and Technical Due-Diligence Auditors.
+- **Pain Point:** Manual technical due-diligence requires **15–25 analyst hours** ($3,000–$5,000 cost per evaluated target).
+- **Pricing Anchor:** A tiered model of **$149–$399 / analyst / month** or pay-per-dossier credits ($99/report) yields an immediate 10x ROI for funds.
+
+**2. Gross Margin Structure on Nebius:**
+- Leveraging open-weights on **Nebius Token Factory** keeps per-report inference costs under $0.02, delivering software gross margins above **90%**.
+
+**3. Defensible Expansion Wedges:**
+- Proprietary rubric scoring and historical diligence audit trails create severe organizational switching costs over time.`;
+    } else if (qLower.includes('procurement') || qLower.includes('bypass') || qLower.includes('startup')) {
       tacticalAnswer = `### Tactical Procurement Bypass Strategy
 To bypass Atlassian's entrenched Global 2000 procurement moat without waiting for enterprise sales cycles:
 

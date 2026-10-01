@@ -59,7 +59,15 @@ export default function HomePage() {
     const saved = localStorage.getItem('omnibrief_config');
     if (saved) {
       try {
-        setConfig(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        if (
+          !parsed.modelName ||
+          parsed.modelName.includes('Llama-3.1-Nemotron-70B') ||
+          (!parsed.modelName.startsWith('nvidia/Nemotron') && !parsed.modelName.startsWith('nvidia/nemotron') && !parsed.modelName.startsWith('nvidia/NVIDIA'))
+        ) {
+          parsed.modelName = OFFICIAL_NEBIUS_MODEL;
+        }
+        setConfig(parsed);
       } catch (e) {
         console.error('Failed to parse saved config:', e);
       }

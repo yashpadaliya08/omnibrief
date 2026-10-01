@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { searchTavily } from '@/lib/tavily';
-import { callNebiusNemotron, generateSynthesizedReport, OFFICIAL_NEBIUS_MODEL } from '@/lib/nebius';
+import { callNebiusNemotron, generateSynthesizedReport, OFFICIAL_NEBIUS_MODEL, normalizeNebiusModel } from '@/lib/nebius';
+import { isGitHubRepoUrl } from '@/lib/repoInspector';
 import { IntelligenceReport } from '@/types/omnibrief';
 
 // Server-side in-memory cache to eliminate duplicate network calls and reduce token burn
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
     }
 
     const cleanQuery = query.trim();
-    const effectiveModel = modelName || process.env.NEBIUS_MODEL || OFFICIAL_NEBIUS_MODEL;
+    const effectiveModel = normalizeNebiusModel(modelName || process.env.NEBIUS_MODEL || OFFICIAL_NEBIUS_MODEL);
     const cacheKey = `${cleanQuery.toLowerCase()}_${effectiveModel}_${Boolean(nebiusApiKey)}`;
 
     // Check cache
@@ -34,8 +35,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const repoCheck = isGitHubRepoUrl(cleanQuery);
+    const searchQuery = repoCheck.isRepo
+      ? `${repoCheck.repo} autonomous market architecture due diligence competitors 2026`
+      : cleanQuery;
+
     // Stage 1: Scout Agent - Real-time Tavily search
-    const { sources, rawQuery } = await searchTavily(cleanQuery, tavilyApiKey);
+    const { sources, rawQuery } = await searchTavily(searchQuery, tavilyApiKey);
 
     // Stage 2 & 3: Reasoning & Critic Agents on Nebius Token Factory
     let report: IntelligenceReport | null = null;
