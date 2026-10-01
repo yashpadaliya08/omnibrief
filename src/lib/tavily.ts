@@ -1,7 +1,7 @@
 import { TavilySource } from '@/types/omnibrief';
 
 export async function searchTavily(query: string, apiKey?: string): Promise<{ sources: TavilySource[]; rawQuery: string }> {
-  const key = apiKey || process.env.TAVILY_API_KEY;
+  const key = (apiKey || process.env.TAVILY_API_KEY || '').trim().replace(/^['"]|['"]$/g, '');
 
   if (key) {
     try {
