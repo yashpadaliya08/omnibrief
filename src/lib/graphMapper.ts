@@ -8,10 +8,13 @@ export function buildGraphFromReport(report: IntelligenceReport): { nodes: Node[
   const rootId = 'root_node';
 
   // 1. Root Node (Center)
+  const rootX = 460;
+  const rootY = 320;
+
   nodes.push({
     id: rootId,
     type: 'rootEntity',
-    position: { x: 550, y: 380 },
+    position: { x: rootX, y: rootY },
     data: {
       title: report.targetEntity,
       tagline: report.tagline,
@@ -22,10 +25,10 @@ export function buildGraphFromReport(report: IntelligenceReport): { nodes: Node[
     },
   });
 
-  // 2. Competitors (Top Row - Widened Spacing)
-  const compStartY = -20;
-  const compStartX = 120;
-  const compSpacingX = 420;
+  // 2. Competitors (Top Row - 3 cards centered above Root)
+  const compStartX = 70;
+  const compSpacingX = 390;
+  const compStartY = 10;
 
   report.competitors.forEach((comp, idx) => {
     const compNodeId = `node_${comp.id}`;
@@ -41,14 +44,14 @@ export function buildGraphFromReport(report: IntelligenceReport): { nodes: Node[
       source: rootId,
       target: compNodeId,
       animated: true,
-      style: { stroke: '#f43f5e', strokeWidth: 2, strokeDasharray: '5,5' },
+      style: { stroke: '#f43f5e', strokeWidth: 2, strokeDasharray: '4,4' },
     });
   });
 
-  // 3. Tech Stack Architecture (Bottom Row - Widened Spacing to prevent overlap)
-  const techStartY = 760;
-  const techStartX = -50;
-  const techSpacingX = 380;
+  // 3. Tech Stack Architecture (Bottom Row - 4 cards with neat gaps)
+  const techStartX = -30;
+  const techSpacingX = 320;
+  const techStartY = 640;
 
   report.techStackAnalysis.forEach((tech, idx) => {
     const techNodeId = `node_${tech.id}`;
@@ -68,10 +71,10 @@ export function buildGraphFromReport(report: IntelligenceReport): { nodes: Node[
     });
   });
 
-  // 4. Moats & Defensibility Pillars (Left Column - 4 pillars matching the Rubric)
-  const moatStartX = -280;
-  const moatStartY = 160;
-  const moatSpacingY = 190;
+  // 4. Moats & Defensibility Pillars (Left Column - 4 cards stacked with clean gaps)
+  const moatStartX = -260;
+  const moatStartY = 120;
+  const moatSpacingY = 175;
 
   report.threatMoatMatrix.forEach((moat, idx) => {
     const moatNodeId = `node_${moat.id}`;
@@ -91,10 +94,10 @@ export function buildGraphFromReport(report: IntelligenceReport): { nodes: Node[
     });
   });
 
-  // 5. Market Whitespace Opportunities (Right Column)
-  const wsStartX = 1380;
-  const wsStartY = 200;
-  const wsSpacingY = 210;
+  // 5. Market Whitespace Opportunities (Right Column - 3 cards stacked)
+  const wsStartX = 1240;
+  const wsStartY = 180;
+  const wsSpacingY = 200;
 
   report.marketWhitespace.forEach((ws, idx) => {
     const wsNodeId = `node_${ws.id}`;
