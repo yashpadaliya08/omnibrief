@@ -16,6 +16,8 @@ import {
   Cpu,
   BarChart3,
   CheckCircle2,
+  Calendar,
+  Zap,
 } from 'lucide-react';
 import { IntelligenceReport } from '@/types/omnibrief';
 
@@ -53,7 +55,8 @@ export function ExecutiveDossier({ report }: ExecutiveDossierProps) {
       entity: report.targetEntity,
       moatScore: report.verdictScore,
       moatRubric: report.moatRubric,
-      criticConfidenceScore: report.citationConfidenceScore,
+      verificationMetrics: report.verificationMetrics,
+      executionMode: report.executionMode,
       models: {
         reasoning: report.nebiusModelUsed,
         infrastructure: 'Nebius Token Factory / Nebius AI Cloud',
@@ -87,10 +90,11 @@ export function ExecutiveDossier({ report }: ExecutiveDossierProps) {
             </span>
             <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
               <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Critic Verified: {report.citationConfidenceScore}% Confidence</span>
+              <span>Critic: {report.verificationMetrics.confidencePercentage}% Verified ({report.verificationMetrics.verifiedGroundedClaims}/{report.verificationMetrics.totalClaimsChecked} Claims)</span>
             </span>
-            <span className="text-xs text-zinc-500 font-mono">
-              Generated: {new Date(report.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono bg-zinc-900 text-zinc-400 border border-zinc-800">
+              <Zap className="w-3 h-3 text-amber-400" />
+              <span>{report.executionMode}</span>
             </span>
           </div>
           <h2 className="text-2xl lg:text-3xl font-black text-white tracking-tight">
@@ -128,16 +132,16 @@ export function ExecutiveDossier({ report }: ExecutiveDossierProps) {
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex overflow-x-auto gap-2 py-4 border-b border-zinc-800/80 no-scrollbar">
+      {/* Navigation Tabs (Smooth flex wrap to prevent cutoff) */}
+      <div className="flex flex-wrap gap-2 py-4 border-b border-zinc-800/80">
         <TabButton active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} icon={<FileText className="w-4 h-4" />}>
           Executive Overview
         </TabButton>
         <TabButton active={activeTab === 'rubric'} onClick={() => setActiveTab('rubric')} icon={<BarChart3 className="w-4 h-4" />}>
-          Transparent Moat Rubric (4 Pillars)
+          Moat Rubric ({report.verdictScore}/100)
         </TabButton>
         <TabButton active={activeTab === 'competitors'} onClick={() => setActiveTab('competitors')} icon={<Swords className="w-4 h-4" />}>
-          Competitor Landscape ({report.competitors.length})
+          Competitors ({report.competitors.length})
         </TabButton>
         <TabButton active={activeTab === 'architecture'} onClick={() => setActiveTab('architecture')} icon={<Layers className="w-4 h-4" />}>
           Architecture Teardown ({report.techStackAnalysis.length})
@@ -149,7 +153,7 @@ export function ExecutiveDossier({ report }: ExecutiveDossierProps) {
           White-Space Wedges ({report.marketWhitespace.length})
         </TabButton>
         <TabButton active={activeTab === 'sources'} onClick={() => setActiveTab('sources')} icon={<ExternalLink className="w-4 h-4" />}>
-          Citations ({report.citations.length})
+          Grounded Sources ({report.citations.length})
         </TabButton>
       </div>
 
@@ -164,24 +168,24 @@ export function ExecutiveDossier({ report }: ExecutiveDossierProps) {
                   <span className="text-3xl font-black text-emerald-400 font-mono">{report.verdictScore}</span>
                   <span className="text-xs text-zinc-400">/ 100</span>
                 </div>
-                <p className="text-[11px] text-zinc-400 mt-1">Weighted across Data Gravity, Switching Cost, Compliance, and Network Effects.</p>
+                <p className="text-[11px] text-zinc-400 mt-1">{report.moatRubric.formulaExplanation}</p>
               </div>
 
               <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800">
                 <span className="text-xs text-zinc-500 uppercase font-mono block mb-1">Inference Engine</span>
                 <div className="flex items-center gap-1.5 text-sm font-mono text-indigo-300 font-bold mt-1">
                   <Cpu className="w-4 h-4 text-indigo-400" />
-                  <span>{report.nebiusModelUsed.split('/').pop()}</span>
+                  <span className="truncate">{report.nebiusModelUsed}</span>
                 </div>
-                <p className="text-[11px] text-zinc-400 mt-1">Served on Nebius Token Factory high-performance GPUs.</p>
+                <p className="text-[11px] text-zinc-400 mt-1">Served on Nebius Token Factory GPU infrastructure.</p>
               </div>
 
               <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800">
-                <span className="text-xs text-zinc-500 uppercase font-mono block mb-1">Critic Validation</span>
+                <span className="text-xs text-zinc-500 uppercase font-mono block mb-1">Critic Verification</span>
                 <div className="text-2xl font-black text-emerald-400 font-mono mt-0.5">
-                  {report.citationConfidenceScore}%
+                  {report.verificationMetrics.confidencePercentage}%
                 </div>
-                <p className="text-[11px] text-zinc-400 mt-1">Cross-referenced against {report.citations.length} live Tavily web sources.</p>
+                <p className="text-[11px] text-zinc-400 mt-1 font-mono text-[10px]">{report.verificationMetrics.formula}</p>
               </div>
             </div>
 
@@ -202,7 +206,9 @@ export function ExecutiveDossier({ report }: ExecutiveDossierProps) {
                     <div className="flex-1 text-xs">
                       <div className="flex items-center justify-between mb-1">
                         <span className="font-semibold text-indigo-300">{step.agent}</span>
-                        <span className="font-mono text-[10px] text-zinc-500">{new Date(step.timestamp).toLocaleTimeString()}</span>
+                        <span className="font-mono text-[10px] text-zinc-500">
+                          {step.durationMs ? `${step.durationMs}ms` : ''} • {new Date(step.timestamp).toLocaleTimeString()}
+                        </span>
                       </div>
                       <p className="text-zinc-400">{step.message}</p>
                     </div>
@@ -234,11 +240,11 @@ export function ExecutiveDossier({ report }: ExecutiveDossierProps) {
         {/* Transparent Moat Rubric Tab */}
         {activeTab === 'rubric' && (
           <div className="space-y-6">
-            <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 flex items-center justify-between">
+            <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h3 className="text-base font-bold text-white">Transparent Moat Viability Rubric</h3>
-                <p className="text-xs text-zinc-400">
-                  Composite score calculated via weighted rubric: Data Gravity (30%) + Switching Costs (30%) + Sovereignty (20%) + Network Effects (20%).
+                <h3 className="text-base font-bold text-white">Transparent Moat Viability Rubric & Arithmetic</h3>
+                <p className="text-xs text-zinc-400 font-mono mt-1">
+                  Formula: {report.moatRubric.formulaExplanation}
                 </p>
               </div>
               <div className="text-right">
@@ -264,12 +270,25 @@ export function ExecutiveDossier({ report }: ExecutiveDossierProps) {
                   <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-rose-500/10 text-rose-300 border border-rose-500/20 font-bold">
                     {comp.category}
                   </span>
-                  <span className="text-xs font-mono text-zinc-400">{comp.marketShare}</span>
+                  <span className="flex items-center gap-1 text-[10px] font-mono text-zinc-400">
+                    <Calendar className="w-3 h-3 text-zinc-500" />
+                    <span>Verified {comp.lastVerified}</span>
+                  </span>
                 </div>
 
                 <div>
-                  <h4 className="text-lg font-bold text-white">{comp.name}</h4>
-                  <p className="text-xs font-mono text-amber-400 mt-0.5">{comp.pricingEstimate || comp.pricingModel}</p>
+                  <h4 className="text-lg font-bold text-white flex items-center justify-between">
+                    <span>{comp.name}</span>
+                    {comp.url && (
+                      <a href={comp.url} target="_blank" rel="noreferrer" className="text-zinc-500 hover:text-rose-300">
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                  </h4>
+                  <div className="flex items-center justify-between mt-1 text-xs font-mono">
+                    <span className="text-amber-400">{comp.pricingEstimate || comp.pricingModel}</span>
+                    <span className="text-zinc-400">{comp.marketShare}</span>
+                  </div>
                 </div>
 
                 <div>
@@ -333,8 +352,11 @@ export function ExecutiveDossier({ report }: ExecutiveDossierProps) {
               <div key={moat.id} className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-mono font-bold uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">
-                      {moat.riskLevel} Risk
+                    <span className="text-xs font-mono font-bold uppercase px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+                      {moat.moatStrengthLevel} Moat ({moat.moatStrengthScore}%)
+                    </span>
+                    <span className="text-xs font-mono uppercase px-2 py-0.5 rounded bg-zinc-900 text-zinc-400 border border-zinc-800">
+                      External Threat: {moat.externalThreatLevel}
                     </span>
                     <h4 className="text-base font-bold text-white">{moat.factor}</h4>
                   </div>
@@ -343,13 +365,15 @@ export function ExecutiveDossier({ report }: ExecutiveDossierProps) {
                     <span className="font-semibold text-emerald-400">Countermeasure:</span> {moat.mitigation}
                   </p>
                 </div>
-                <div className="md:w-36 shrink-0">
-                  <div className="flex justify-between text-xs font-mono text-zinc-400 mb-1">
-                    <span>Defensibility</span>
-                    <span className="font-bold text-amber-400">{moat.defensibilityScore}%</span>
+                <div className="md:w-44 shrink-0 text-right">
+                  <div className="text-xs font-mono text-zinc-400 mb-1">
+                    Defensibility: <strong className="text-amber-300">{moat.moatStrengthScore}%</strong>
+                  </div>
+                  <div className="text-xs font-mono text-emerald-400 font-bold mb-1">
+                    +{moat.pointContribution} pts ({moat.weightPercentage}%)
                   </div>
                   <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-amber-500 to-rose-500 rounded-full" style={{ width: `${moat.defensibilityScore}%` }} />
+                    <div className="h-full bg-gradient-to-r from-amber-500 to-emerald-400 rounded-full" style={{ width: `${moat.moatStrengthScore}%` }} />
                   </div>
                 </div>
               </div>
@@ -376,6 +400,10 @@ export function ExecutiveDossier({ report }: ExecutiveDossierProps) {
 
         {activeTab === 'sources' && (
           <div className="space-y-3">
+            <div className="p-3.5 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs text-zinc-400 font-mono flex items-center justify-between">
+              <span>Critic Verification Formula: {report.verificationMetrics.formula}</span>
+              <span className="text-emerald-400 font-bold">{report.citations.length} Grounded Citations</span>
+            </div>
             {report.citations.map((c, idx) => (
               <a
                 key={idx}
@@ -389,7 +417,10 @@ export function ExecutiveDossier({ report }: ExecutiveDossierProps) {
                   <ExternalLink className="w-3.5 h-3.5 text-zinc-500 group-hover:text-indigo-400 shrink-0 ml-2" />
                 </div>
                 <p className="text-zinc-400 line-clamp-2">{c.content}</p>
-                <span className="text-[10px] font-mono text-zinc-500 block mt-2">{c.url}</span>
+                <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 mt-2">
+                  <span>{c.url}</span>
+                  {c.publishedDate && <span>Indexed: {c.publishedDate}</span>}
+                </div>
               </a>
             ))}
           </div>
@@ -399,7 +430,7 @@ export function ExecutiveDossier({ report }: ExecutiveDossierProps) {
   );
 }
 
-function RubricCard({ pillar, color }: { pillar: { name: string; score: number; weight: number; evidence: string; riskSummary: string }; color: 'indigo' | 'cyan' | 'amber' | 'emerald' }) {
+function RubricCard({ pillar, color }: { pillar: { name: string; score: number; weight: number; pointsContributed: number; evidence: string; riskSummary: string }; color: 'indigo' | 'cyan' | 'amber' | 'emerald' }) {
   const colorMap = {
     indigo: 'text-indigo-400 border-indigo-500/30 bg-indigo-950/20',
     cyan: 'text-cyan-400 border-cyan-500/30 bg-cyan-950/20',
@@ -413,7 +444,10 @@ function RubricCard({ pillar, color }: { pillar: { name: string; score: number; 
         <span className={`text-xs font-mono font-bold uppercase px-2.5 py-0.5 rounded border ${colorMap[color]}`}>
           {pillar.name} ({Math.round(pillar.weight * 100)}% Weight)
         </span>
-        <span className="text-xl font-bold font-mono text-white">{pillar.score}/100</span>
+        <div className="text-right">
+          <span className="text-xl font-bold font-mono text-white">{pillar.score}/100</span>
+          <span className="text-[11px] font-mono text-emerald-400 block font-bold">+{pillar.pointsContributed} pts</span>
+        </div>
       </div>
 
       <div>
@@ -458,9 +492,9 @@ function TabButton({
 function generateMarkdownExport(report: IntelligenceReport): string {
   return `# OmniBrief Executive Due-Diligence Dossier: ${report.targetEntity}
 **Tagline:** ${report.tagline}  
-**Composite Moat Viability Index:** ${report.verdictScore}/100  
-**Critic Verification Confidence:** ${report.citationConfidenceScore}%  
-**Inference Engine:** ${report.nebiusModelUsed} on Nebius Token Factory  
+**Composite Moat Viability Index:** ${report.verdictScore}/100 (${report.moatRubric.formulaExplanation})  
+**Critic Verification Confidence:** ${report.verificationMetrics.confidencePercentage}% (${report.verificationMetrics.formula})  
+**Inference Engine:** ${report.nebiusModelUsed} (${report.executionMode})  
 **Generated Date:** ${new Date(report.createdAt).toUTCString()}  
 
 ---
@@ -470,20 +504,22 @@ ${report.executiveSummary}
 
 ---
 
-## 2. Transparent 4-Pillar Moat Rubric
-| Moat Pillar | Score | Weight | Observed Evidence | Risk / Vulnerability |
-| :--- | :---: | :---: | :--- | :--- |
-| **${report.moatRubric.dataGravity.name}** | ${report.moatRubric.dataGravity.score}/100 | 30% | ${report.moatRubric.dataGravity.evidence} | ${report.moatRubric.dataGravity.riskSummary} |
-| **${report.moatRubric.switchingCosts.name}** | ${report.moatRubric.switchingCosts.score}/100 | 30% | ${report.moatRubric.switchingCosts.evidence} | ${report.moatRubric.switchingCosts.riskSummary} |
-| **${report.moatRubric.regulatoryCompliance.name}** | ${report.moatRubric.regulatoryCompliance.score}/100 | 20% | ${report.moatRubric.regulatoryCompliance.evidence} | ${report.moatRubric.regulatoryCompliance.riskSummary} |
-| **${report.moatRubric.networkEffects.name}** | ${report.moatRubric.networkEffects.score}/100 | 20% | ${report.moatRubric.networkEffects.evidence} | ${report.moatRubric.networkEffects.riskSummary} |
+## 2. Reconciled 4-Pillar Moat Rubric
+| Moat Pillar | Score | Weight | Contribution | Observed Evidence | Risk / Vulnerability |
+| :--- | :---: | :---: | :---: | :--- | :--- |
+| **${report.moatRubric.dataGravity.name}** | ${report.moatRubric.dataGravity.score}/100 | 30% | +${report.moatRubric.dataGravity.pointsContributed} pts | ${report.moatRubric.dataGravity.evidence} | ${report.moatRubric.dataGravity.riskSummary} |
+| **${report.moatRubric.switchingCosts.name}** | ${report.moatRubric.switchingCosts.score}/100 | 30% | +${report.moatRubric.switchingCosts.pointsContributed} pts | ${report.moatRubric.switchingCosts.evidence} | ${report.moatRubric.switchingCosts.riskSummary} |
+| **${report.moatRubric.regulatoryCompliance.name}** | ${report.moatRubric.regulatoryCompliance.score}/100 | 20% | +${report.moatRubric.regulatoryCompliance.pointsContributed} pts | ${report.moatRubric.regulatoryCompliance.evidence} | ${report.moatRubric.regulatoryCompliance.riskSummary} |
+| **${report.moatRubric.networkEffects.name}** | ${report.moatRubric.networkEffects.score}/100 | 20% | +${report.moatRubric.networkEffects.pointsContributed} pts | ${report.moatRubric.networkEffects.evidence} | ${report.moatRubric.networkEffects.riskSummary} |
+
+$$\\text{Total Composite Score} = ${report.moatRubric.compositeScore}/100$$
 
 ---
 
-## 3. Competitor Landscape
+## 3. Competitor Landscape (Verified October 2026)
 ${report.competitors
   .map(
-    (c) => `### ${c.name} (${c.category.toUpperCase()})
+    (c) => `### ${c.name} (${c.category.toUpperCase()} - Verified ${c.lastVerified})
 - **Market Share:** ${c.marketShare}
 - **Pricing:** ${c.pricingEstimate || c.pricingModel}
 - **Strengths:** ${c.strengths.join(', ')}
@@ -509,7 +545,8 @@ ${report.techStackAnalysis
 ## 5. Threat & Defensibility Matrix
 ${report.threatMoatMatrix
   .map(
-    (m) => `### ${m.factor} [Risk: ${m.riskLevel.toUpperCase()} | Score: ${m.defensibilityScore}%]
+    (m) => `### ${m.factor} [Moat: ${m.moatStrengthLevel} (${m.moatStrengthScore}%) | Threat: ${m.externalThreatLevel}]
+- **Point Contribution:** +${m.pointContribution} pts (${m.weightPercentage}%)
 - **Details:** ${m.details}
 - **Strategic Countermeasure:** ${m.mitigation}
 `

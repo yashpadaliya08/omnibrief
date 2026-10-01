@@ -12,7 +12,6 @@ import {
   ArrowRight,
   RefreshCw,
   Zap,
-  CheckCircle2,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -20,7 +19,7 @@ import { IntelligenceCanvas } from '@/components/canvas/IntelligenceCanvas';
 import { ExecutiveDossier } from '@/components/dossier/ExecutiveDossier';
 import { ApiConfigModal } from '@/components/config/ApiConfigModal';
 import { IntelligenceReport } from '@/types/omnibrief';
-import { generateSynthesizedReport } from '@/lib/nebius';
+import { generateSynthesizedReport, OFFICIAL_NEBIUS_MODEL } from '@/lib/nebius';
 
 const PRESET_QUERIES = [
   { label: 'Linear.app', query: 'Linear.app issue tracking and project management' },
@@ -38,25 +37,18 @@ export default function HomePage() {
   const [config, setConfig] = useState({
     nebiusApiKey: '',
     tavilyApiKey: '',
-    modelName: 'nvidia/Llama-3.1-Nemotron-70B-Instruct-HF',
+    modelName: OFFICIAL_NEBIUS_MODEL,
   });
 
   // Current report initialized with Linear as sample
   const [report, setReport] = useState<IntelligenceReport>(() =>
-    generateSynthesizedReport('Linear.app issue tracking and project management', [
-      {
-        title: 'Linear: The issue tracking tool you will actually enjoy using',
-        url: 'https://linear.app',
-        content: 'Linear streamlines software projects, sprints, tasks, and bug tracking with high-performance sync engines.',
-        score: 0.98,
-      },
-      {
-        title: 'How Linear Built Its Local-First Realtime Architecture',
-        url: 'https://linear.app/blog',
-        content: 'Technical teardown of Linear synchronization architecture, optimistic local SQLite cache, and GraphQL synchronization.',
-        score: 0.91,
-      },
-    ])
+    generateSynthesizedReport(
+      'Linear.app issue tracking and project management',
+      [],
+      OFFICIAL_NEBIUS_MODEL,
+      false,
+      2450
+    )
   );
 
   const [currentStepIndex, setCurrentStepIndex] = useState(4);
@@ -119,12 +111,12 @@ export default function HomePage() {
         }
       } else {
         console.warn('API error, falling back to local synthesis');
-        const fallback = generateSynthesizedReport(targetQuery, [], config.modelName);
+        const fallback = generateSynthesizedReport(targetQuery, [], config.modelName, Boolean(config.nebiusApiKey));
         setReport(fallback);
       }
     } catch (err) {
       console.error('Analysis execution failed:', err);
-      const fallback = generateSynthesizedReport(targetQuery, [], config.modelName);
+      const fallback = generateSynthesizedReport(targetQuery, [], config.modelName, Boolean(config.nebiusApiKey));
       setReport(fallback);
     } finally {
       setLoading(false);
@@ -161,8 +153,10 @@ export default function HomePage() {
             {/* Model & Cloud Badge */}
             <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-mono">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-zinc-400">Model:</span>
-              <span className="text-indigo-300 font-bold">{config.modelName.split('/').pop()}</span>
+              <span className="text-zinc-400">Inference:</span>
+              <span className="text-indigo-300 font-bold truncate max-w-[200px]" title={config.modelName}>
+                {config.modelName.replace('nvidia/', '')}
+              </span>
             </div>
 
             {/* Config Settings Button */}
@@ -188,7 +182,7 @@ export default function HomePage() {
           <div className="relative max-w-3xl mx-auto text-center space-y-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono bg-zinc-800/80 border border-zinc-700/60 text-zinc-300">
               <Zap className="w-3.5 h-3.5 text-amber-400" />
-              <span>4-Stage Multi-Agent Swarm: Scout → Reasoning → Critic → Topology</span>
+              <span>4-Stage Pipeline: Scout → Reasoning → Critic → Topology Compiler</span>
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
@@ -196,7 +190,7 @@ export default function HomePage() {
             </h1>
 
             <p className="text-sm sm:text-base text-zinc-400 leading-relaxed max-w-2xl mx-auto">
-              Synthesize competitor pricing, architectural bottlenecks, and a 4-pillar defensibility moat rubric in under a minute on open infrastructure.
+              Synthesize competitor pricing, architectural bottlenecks, and a transparent 4-pillar defensibility rubric in under a minute on open infrastructure.
             </p>
 
             {/* Input Form */}
@@ -256,9 +250,9 @@ export default function HomePage() {
                 <div className={`p-3 rounded-xl border ${currentStepIndex >= 1 ? 'bg-indigo-950/40 border-indigo-500/40 text-indigo-300' : 'bg-zinc-900 border-zinc-800 text-zinc-500'}`}>
                   <div className="flex items-center gap-1.5 font-bold mb-1">
                     <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
-                    <span>1. Scout</span>
+                    <span>1. Scout Agent</span>
                   </div>
-                  <p className="text-[10px] text-zinc-400">Tavily Search</p>
+                  <p className="text-[10px] text-zinc-400">Tavily Deep Search</p>
                 </div>
 
                 <div className={`p-3 rounded-xl border ${currentStepIndex >= 2 ? 'bg-cyan-950/40 border-cyan-500/40 text-cyan-300' : 'bg-zinc-900 border-zinc-800 text-zinc-500'}`}>
@@ -266,15 +260,15 @@ export default function HomePage() {
                     <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
                     <span>2. Reasoning</span>
                   </div>
-                  <p className="text-[10px] text-zinc-400">Nemotron 3 Ultra</p>
+                  <p className="text-[10px] text-zinc-400">Nemotron-70B</p>
                 </div>
 
                 <div className={`p-3 rounded-xl border ${currentStepIndex >= 3 ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300' : 'bg-zinc-900 border-zinc-800 text-zinc-500'}`}>
                   <div className="flex items-center gap-1.5 font-bold mb-1">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>3. Critic</span>
+                    <span>3. Critic Agent</span>
                   </div>
-                  <p className="text-[10px] text-zinc-400">Citation Check</p>
+                  <p className="text-[10px] text-zinc-400">Citation Cross-Check</p>
                 </div>
 
                 <div className={`p-3 rounded-xl border ${currentStepIndex >= 4 ? 'bg-purple-950/40 border-purple-500/40 text-purple-300' : 'bg-zinc-900 border-zinc-800 text-zinc-500'}`}>
@@ -282,7 +276,7 @@ export default function HomePage() {
                     <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
                     <span>4. Topology</span>
                   </div>
-                  <p className="text-[10px] text-zinc-400">XYFlow Nodes</p>
+                  <p className="text-[10px] text-zinc-400">XYFlow Spatial Map</p>
                 </div>
               </div>
             </div>
@@ -323,15 +317,15 @@ export default function HomePage() {
             </button>
           </div>
 
-          <div className="text-xs font-mono text-zinc-400 flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-zinc-400">
             <span>Entity:</span>
             <span className="font-bold text-white px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800">
               {report.targetEntity}
             </span>
-            <span className="text-zinc-500">|</span>
+            <span className="text-zinc-500">•</span>
             <span className="text-emerald-400 font-bold">Moat Score: {report.verdictScore}/100</span>
-            <span className="text-zinc-500">|</span>
-            <span className="text-indigo-400 font-bold">Critic Verified ({report.citationConfidenceScore}%)</span>
+            <span className="text-zinc-500">•</span>
+            <span className="text-indigo-400 font-bold">Critic: {report.verificationMetrics.confidencePercentage}%</span>
           </div>
         </section>
 
@@ -361,7 +355,7 @@ export default function HomePage() {
             <span>Built for the Nebius x NVIDIA Global AI Hackathon</span>
           </div>
           <div className="flex items-center gap-4 text-[11px]">
-            <span className="text-indigo-400 font-mono">NVIDIA Nemotron 3 Ultra</span>
+            <span className="text-indigo-400 font-mono">NVIDIA Llama-3.1-Nemotron-70B-Instruct</span>
             <span className="text-zinc-700">•</span>
             <span className="text-cyan-400 font-mono">Nebius Token Factory</span>
             <span className="text-zinc-700">•</span>

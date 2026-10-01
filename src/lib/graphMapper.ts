@@ -11,7 +11,7 @@ export function buildGraphFromReport(report: IntelligenceReport): { nodes: Node[
   nodes.push({
     id: rootId,
     type: 'rootEntity',
-    position: { x: 500, y: 350 },
+    position: { x: 550, y: 380 },
     data: {
       title: report.targetEntity,
       tagline: report.tagline,
@@ -22,11 +22,10 @@ export function buildGraphFromReport(report: IntelligenceReport): { nodes: Node[
     },
   });
 
-  // 2. Competitors (Top-Left & Top-Right)
-  // Spread above the root node
-  const compStartY = 40;
-  const compStartX = 100;
-  const compSpacingX = 380;
+  // 2. Competitors (Top Row - Widened Spacing)
+  const compStartY = -20;
+  const compStartX = 120;
+  const compSpacingX = 420;
 
   report.competitors.forEach((comp, idx) => {
     const compNodeId = `node_${comp.id}`;
@@ -42,26 +41,21 @@ export function buildGraphFromReport(report: IntelligenceReport): { nodes: Node[
       source: rootId,
       target: compNodeId,
       animated: true,
-      style: { stroke: '#f43f5e', strokeWidth: 2 },
-      label: 'Competitor',
-      labelStyle: { fill: '#fda4af', fontSize: 11, fontWeight: 600 },
-      labelBgStyle: { fill: '#881337', fillOpacity: 0.8 },
-      labelBgPadding: [6, 3],
-      labelBgBorderRadius: 4,
+      style: { stroke: '#f43f5e', strokeWidth: 2, strokeDasharray: '5,5' },
     });
   });
 
-  // 3. Tech Stack Architecture (Bottom-Left)
-  const techStartY = 640;
-  const techStartX = 60;
-  const techSpacingX = 300;
+  // 3. Tech Stack Architecture (Bottom Row - Widened Spacing to prevent overlap)
+  const techStartY = 760;
+  const techStartX = -50;
+  const techSpacingX = 380;
 
   report.techStackAnalysis.forEach((tech, idx) => {
     const techNodeId = `node_${tech.id}`;
     nodes.push({
       id: techNodeId,
       type: 'techStack',
-      position: { x: techStartX + idx * techSpacingX, y: techStartY + (idx % 2 === 0 ? 0 : 40) },
+      position: { x: techStartX + idx * techSpacingX, y: techStartY },
       data: { ...tech, report },
     });
 
@@ -71,18 +65,13 @@ export function buildGraphFromReport(report: IntelligenceReport): { nodes: Node[
       target: techNodeId,
       animated: true,
       style: { stroke: '#06b6d4', strokeWidth: 2 },
-      label: 'Architecture',
-      labelStyle: { fill: '#67e8f9', fontSize: 11, fontWeight: 600 },
-      labelBgStyle: { fill: '#164e63', fillOpacity: 0.8 },
-      labelBgPadding: [6, 3],
-      labelBgBorderRadius: 4,
     });
   });
 
-  // 4. Moats & Threats (Far Left)
-  const moatStartX = -220;
-  const moatStartY = 200;
-  const moatSpacingY = 180;
+  // 4. Moats & Defensibility Pillars (Left Column - 4 pillars matching the Rubric)
+  const moatStartX = -280;
+  const moatStartY = 160;
+  const moatSpacingY = 190;
 
   report.threatMoatMatrix.forEach((moat, idx) => {
     const moatNodeId = `node_${moat.id}`;
@@ -99,18 +88,13 @@ export function buildGraphFromReport(report: IntelligenceReport): { nodes: Node[
       target: moatNodeId,
       animated: true,
       style: { stroke: '#f59e0b', strokeWidth: 2 },
-      label: 'Moat Factor',
-      labelStyle: { fill: '#fcd34d', fontSize: 11, fontWeight: 600 },
-      labelBgStyle: { fill: '#78350f', fillOpacity: 0.8 },
-      labelBgPadding: [6, 3],
-      labelBgBorderRadius: 4,
     });
   });
 
-  // 5. Market Whitespace Opportunities (Far Right)
-  const wsStartX = 1150;
-  const wsStartY = 220;
-  const wsSpacingY = 190;
+  // 5. Market Whitespace Opportunities (Right Column)
+  const wsStartX = 1380;
+  const wsStartY = 200;
+  const wsSpacingY = 210;
 
   report.marketWhitespace.forEach((ws, idx) => {
     const wsNodeId = `node_${ws.id}`;
@@ -127,11 +111,6 @@ export function buildGraphFromReport(report: IntelligenceReport): { nodes: Node[
       target: wsNodeId,
       animated: true,
       style: { stroke: '#10b981', strokeWidth: 2 },
-      label: 'White-Space Opportunity',
-      labelStyle: { fill: '#6ee7b7', fontSize: 11, fontWeight: 600 },
-      labelBgStyle: { fill: '#064e3b', fillOpacity: 0.8 },
-      labelBgPadding: [6, 3],
-      labelBgBorderRadius: 4,
     });
   });
 
