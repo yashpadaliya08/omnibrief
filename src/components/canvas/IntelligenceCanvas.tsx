@@ -24,10 +24,8 @@ import { SharedClashNode } from './nodes/SharedClashNode';
 import { NodeInspectorDrawer } from './NodeInspectorDrawer';
 import { WarGameController } from '@/components/wargame/WarGameController';
 import { HeadToHeadBattleCardModal } from '@/components/clash/HeadToHeadBattleCardModal';
-import { TemporalEvolutionBar } from './TemporalEvolutionBar';
 import { IntelligenceReport, WarGameScenario } from '@/types/omnibrief';
 import { buildGraphFromReport } from '@/lib/graphMapper';
-import { applyTemporalEvolution, EvolutionYear } from '@/lib/temporalEngine';
 import { Compass, Maximize2, Minimize2, RotateCcw, Swords } from 'lucide-react';
 
 const STATIC_NODE_TYPES = {
@@ -55,10 +53,7 @@ export const IntelligenceCanvas = React.memo(function IntelligenceCanvas({
   nebiusApiKey,
   modelName,
 }: IntelligenceCanvasProps) {
-  const [evolutionYear, setEvolutionYear] = useState<EvolutionYear>(2026);
-  const activeReport = useMemo(() => applyTemporalEvolution(report, evolutionYear), [report, evolutionYear]);
-
-  const initialGraph = useMemo(() => buildGraphFromReport(activeReport), [activeReport]);
+  const initialGraph = useMemo(() => buildGraphFromReport(report), [report]);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialGraph.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialGraph.edges);
 
@@ -67,9 +62,9 @@ export const IntelligenceCanvas = React.memo(function IntelligenceCanvas({
   const [isFocusMode, setIsFocusMode] = useState(false);
   const flowInstanceRef = useRef<ReactFlowInstance | null>(null);
 
-  // Synchronize nodes and edges whenever activeReport updates
+  // Synchronize nodes and edges whenever report updates
   useEffect(() => {
-    const next = buildGraphFromReport(activeReport);
+    const next = buildGraphFromReport(report);
     setNodes(next.nodes);
     setEdges(next.edges);
     setSelectedNode(null);
@@ -78,7 +73,7 @@ export const IntelligenceCanvas = React.memo(function IntelligenceCanvas({
         flowInstanceRef.current?.fitView({ padding: 0.12, minZoom: 0.65, maxZoom: 1.15 });
       }, 100);
     }
-  }, [activeReport, setNodes, setEdges]);
+  }, [report, setNodes, setEdges]);
 
   // Re-fit canvas smoothly when entering or exiting Focus Mode
   useEffect(() => {
@@ -90,6 +85,18 @@ export const IntelligenceCanvas = React.memo(function IntelligenceCanvas({
 
   const onNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
     setSelectedNode(node);
+    if (flowInstanceRef.current) {
+      const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768;
+      const xOffset = isDesktop ? 180 : 0;
+      flowInstanceRef.current.setCenter(
+        node.position.x + xOffset,
+        node.position.y + 30,
+        {
+          zoom: Math.max(flowInstanceRef.current.getZoom(), 0.78),
+          duration: 400,
+        }
+      );
+    }
   }, []);
 
   const handleCloseDrawer = useCallback(() => {
@@ -117,7 +124,11 @@ export const IntelligenceCanvas = React.memo(function IntelligenceCanvas({
       }
     >
       {/* Top Overlay Bar */}
-      <div className="absolute top-4 left-4 z-10 flex flex-wrap items-center gap-2 pointer-events-auto">
+      <div
+        className={`absolute top-4 left-4 z-10 flex flex-wrap items-center gap-2 pointer-events-auto transition-all duration-300 ${
+          selectedNode ? 'max-w-[calc(100%-500px)]' : 'max-w-2xl'
+        }`}
+      >
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900/90 border border-zinc-800 backdrop-blur-md text-xs font-mono text-zinc-300">
           <Compass className="w-3.5 h-3.5 text-indigo-400" />
           <span>Canvas View: Spatial Topology</span>
@@ -138,13 +149,14 @@ export const IntelligenceCanvas = React.memo(function IntelligenceCanvas({
             <span className="w-2 h-2 rounded-full bg-emerald-500" /> White-Space
           </span>
         </div>
-
-        {/* Temporal Evolution Slider */}
-        <TemporalEvolutionBar currentYear={evolutionYear} onYearChange={setEvolutionYear} />
       </div>
 
       {/* Top Right Canvas Actions */}
-      <div className="absolute top-4 right-4 z-10 flex items-center gap-2 pointer-events-auto">
+      <div
+        className={`absolute top-4 z-10 flex items-center gap-2 pointer-events-auto transition-all duration-300 ${
+          selectedNode ? 'right-4 sm:right-[480px]' : 'right-4'
+        }`}
+      >
         {report.headToHead && (
           <button
             onClick={() => setBattleCardOpen(true)}
@@ -223,7 +235,9 @@ export const IntelligenceCanvas = React.memo(function IntelligenceCanvas({
           nodeStrokeWidth={3}
           zoomable
           pannable
-          className="!bg-zinc-950/90 !border !border-zinc-800 !rounded-xl shadow-xl hidden md:block"
+          className={`!bg-zinc-950/90 !border !border-zinc-800 !rounded-xl shadow-xl hidden md:block transition-all duration-300 ${
+            selectedNode ? '!right-[480px]' : ''
+          }`}
           nodeColor={(n) => {
             if (n.type === 'rootEntity') return '#6366f1';
             if (n.type === 'competitor') return '#f43f5e';
@@ -238,7 +252,7 @@ export const IntelligenceCanvas = React.memo(function IntelligenceCanvas({
       {/* Floating Strategic War-Game Controller */}
       {onApplyWarGame && onResetWarGame && (
         <WarGameController
-          report={activeReport}
+          report={report}
           onApplyScenario={onApplyWarGame}
           onResetScenario={onResetWarGame}
           nebiusApiKey={nebiusApiKey}
@@ -250,16 +264,16 @@ export const IntelligenceCanvas = React.memo(function IntelligenceCanvas({
       {/* Slide-in Inspector Drawer */}
       <NodeInspectorDrawer
         selectedNode={selectedNode}
-        report={activeReport}
+        report={report}
         onClose={handleCloseDrawer}
         nebiusApiKey={nebiusApiKey}
         modelName={modelName}
       />
 
       {/* Head-to-Head Clash Battle Card Modal */}
-      {activeReport.headToHead && (
+      {report.headToHead && (
         <HeadToHeadBattleCardModal
-          battleCard={activeReport.headToHead}
+          battleCard={report.headToHead}
           isOpen={battleCardOpen}
           onClose={() => setBattleCardOpen(false)}
         />

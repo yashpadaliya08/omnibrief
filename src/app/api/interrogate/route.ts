@@ -27,7 +27,8 @@ The user is inspecting a specific node on a competitive market & architecture gr
 Your task is to answer the user's question with surgical precision, tactical depth, and zero generic boilerplate.
 Answer strictly through the lens of this specific node and the target entity's defensibility.
 If the user asks for code or architecture patterns, provide real, concrete, syntactically correct code snippets (e.g. SQL, TypeScript, CRDT sync, or Docker configs).
-Format your answer with clean Markdown, bold headers, and actionable steps.`;
+Format your answer with clean Markdown, bold headers, and actionable steps.
+Important: Output your executive tactical analysis directly in clean markdown. Do not include internal planning monologue or conversational preamble phrases like "Here's a thinking process:".`;
 
     const userPrompt = `Target Entity: ${targetEntity}
 Inspected Node: "${nodeTitle}" (Type: ${nodeType})

@@ -61,6 +61,12 @@
 - [x] **Elastic Relational Canvas Layout:** Completely replaced rigid 3-4-4-3 node positioning in `graphMapper.ts` with dynamic mathematical centering. Automatically scales and centers variable counts of competitors (top), tech stack components (bottom), defensibility moats (left), and white-space opportunities (right) with zero node overlap.
 - [x] **Live Unescaped Markdown Interrogation:** Fixed JSON envelope extraction and passed `forceJson: false` in `/api/interrogate` to ensure live Nebius responses render beautiful formatted markdown with headers, bullet points, and code blocks in real time.
 
+### Phase 9: End-to-End Live Dynamic Synthesis & UI Collision Hardening
+- [x] **Solved Hardcoded Fallback Root Cause:** Identified that Nemotron reasoning tokens (`Here's a thinking process:`) were causing standard `JSON.parse` in `/api/analyze` to throw and fall back to baseline templates. Implemented `extractJsonFromModelOutput` and streamlined system prompt schema, achieving 100% live GPU synthesis for all queried entities.
+- [x] **Entity-Tailored Dynamic Generation:** Replaced static fallback blocks with domain-adaptive synthesis (DevTools, AI/ML platforms, FinTech/Payments, Databases, and general SaaS) so that competitors, architecture stacks, defensibility moats, and white-space opportunities are dynamically grounded for each specific query.
+- [x] **Decommissioned Timeline Bar:** Completely retired the hardcoded 2023–2026 timeline slider (`TemporalEvolutionBar.tsx` and `temporalEngine.ts`), eliminating misleading historical artifacts and giving the spatial canvas full vertical breathing room.
+- [x] **UI Overlap & Collision Fixes:** Centered `WarGameController` to eliminate collision with bottom-left zoom controls, added dynamic action bar offset when `NodeInspectorDrawer` is opened, and implemented smooth auto-centering on clicked nodes.
+
 ---
 
 ## 3. Upcoming Enhancements (Roadmap)

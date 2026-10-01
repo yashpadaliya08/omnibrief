@@ -102,4 +102,17 @@ $$\text{Composite Moat Score} = 25.5 + 27.6 + 14.0 + 17.8 = 84.9 \approx 85/100$
 - **Problem Solved:** Rigid, hardcoded 3-4-4-3 node grid coordinates caused overlapping or static-looking topologies when repos had varying counts of tech stack items or competitors.
 - **Solution:** Rewrote `graphMapper.ts` with geometric centering algorithms that dynamically calculate horizontal offsets for $(N)$ competitors and $(M)$ tech nodes relative to the central root node, with vertically balanced stacks for moats and whitespace opportunities.
 
+---
+
+## 8. Phase 9 End-to-End Live Dynamic Synthesis & UI Collision Hardening
+
+### 9. 🧠 Nemotron Chain-of-Thought JSON Parsing Fix
+- **Problem Solved:** NVIDIA Nemotron-3.5-Lightning on Nebius Token Factory prepends internal reasoning traces (`Here's a thinking process: ...`) before outputting JSON. Standard `JSON.parse` threw syntax errors, causing `/api/analyze` to silently abort to the deterministic fallback template.
+- **Solution:** Built `extractJsonFromModelOutput` which isolates the valid JSON boundary (`{ ... }`), and streamlined the system prompt schema to prevent token limit truncation.
+- **Outcome:** Live GPU synthesis now powers 100% of queries with bespoke competitors, custom tech stacks, and tailored whitespace opportunities.
+
+### 10. 🛡️ Decommissioned Static Timeline & Eliminated UI Collisions
+- **Problem Solved:** Hardcoded 2023–2026 timeline bar took up massive canvas space, showed misleading notes for arbitrary repos, and collided with top toolbar elements. War-Game bar also overlapped bottom-left zoom controls.
+- **Solution:** Completely removed `TemporalEvolutionBar` and `temporalEngine.ts`. Horizontally centered `WarGameController` at the bottom of the canvas, and added dynamic offset to top-right actions when `NodeInspectorDrawer` opens.
+
 

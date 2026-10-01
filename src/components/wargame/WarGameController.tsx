@@ -94,7 +94,13 @@ export const WarGameController = React.memo(function WarGameController({
   };
 
   return (
-    <div className="absolute bottom-4 left-4 z-20 w-[95%] max-w-xl pointer-events-auto">
+    <div
+      className={`absolute bottom-4 z-20 w-[94%] sm:w-auto sm:min-w-[460px] max-w-xl pointer-events-auto transition-all duration-300 ${
+        isDrawerOpen
+          ? 'left-1/2 -translate-x-1/2 md:left-[calc(50%-180px)]'
+          : 'left-1/2 -translate-x-1/2'
+      }`}
+    >
       <div className="rounded-2xl border border-zinc-700/80 bg-zinc-950/90 backdrop-blur-xl shadow-2xl overflow-hidden transition-all duration-300">
         {/* Header Bar */}
         <div

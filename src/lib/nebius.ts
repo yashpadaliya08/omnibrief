@@ -44,8 +44,8 @@ export async function callNebiusNemotron(
         { role: 'system', content: systemPrompt },
         { role: 'user', content: prompt },
       ],
-      temperature: 0.2,
-      max_tokens: 2500,
+      temperature: 0.1,
+      max_tokens: 4096,
     };
 
     if (forceJson) {
@@ -333,40 +333,154 @@ export function generateSynthesizedReport(
         },
       ];
     })(),
-    techStackAnalysis: repoCheck.isRepo ? getGroundedTechStackSync(repoCheck.owner, repoCheck.repo) : [
-      {
-        id: 'tech_1',
-        component: 'Data Layer & Synchronization',
-        competitorChoice: 'Proprietary WebSocket Sync + Multi-tenant Postgres',
-        recommendedOpenStack: 'PostgreSQL + ElectricSQL / Yjs CRDTs',
-        whyItMatters: 'Guarantees sub-50ms optimistic local updates in the client while maintaining zero-data-loss conflict-free synchronization across offline network partitions.',
-        scalabilityRating: 5,
-      },
-      {
-        id: 'tech_2',
-        component: 'Client State & Offline Storage',
-        competitorChoice: 'Custom In-Memory SQLite WebAssembly Cache',
-        recommendedOpenStack: 'OPFS (Origin Private File System) + WASM SQLite',
-        whyItMatters: 'Persists gigabytes of workspace issue history locally on the developer machine, eliminating network roundtrips for search and filter operations.',
-        scalabilityRating: 5,
-      },
-      {
-        id: 'tech_3',
-        component: 'Realtime WebSocket Transport',
-        competitorChoice: 'Custom Node.js WebSocket gateway servers',
-        recommendedOpenStack: 'AnyCable / Centrifugo Distributed WebSockets',
-        whyItMatters: 'Decouples persistent WebSocket connection management from application backends, scaling to millions of concurrent client connections with minimal RAM.',
-        scalabilityRating: 4,
-      },
-      {
-        id: 'tech_4',
-        component: 'Edge API Routing & Cache Invalidation',
-        competitorChoice: 'AWS CloudFront + ALB Monoliths in us-east-1',
-        recommendedOpenStack: 'Cloudflare Workers / Fastly Edge Compute',
-        whyItMatters: 'Terminates TLS and verifies JWT session tokens at the global edge, reducing global API request latency by 60ms+ for international developers.',
-        scalabilityRating: 4,
-      },
-    ],
+    techStackAnalysis: (() => {
+      if (repoCheck.isRepo) {
+        return getGroundedTechStackSync(repoCheck.owner, repoCheck.repo);
+      }
+      if (lower.includes('cursor') || lower.includes('perplexity') || lower.includes('aitos') || lower.includes('ai') || lower.includes('llm') || lower.includes('agent')) {
+        return [
+          {
+            id: 'tech_1',
+            component: 'Model Inference Cluster & Serving',
+            competitorChoice: 'Closed OpenAI / Anthropic Proprietary APIs',
+            recommendedOpenStack: 'NVIDIA Nemotron-3.5 on Nebius Token Factory',
+            whyItMatters: 'Guarantees sub-second token generation latency, zero data retention privacy SLAs, and eliminates SaaS vendor API cost lock-in.',
+            scalabilityRating: 5,
+          },
+          {
+            id: 'tech_2',
+            component: 'Grounding & Vector Retrieval Layer',
+            competitorChoice: 'Static Crawlers / Stale Training Embeddings',
+            recommendedOpenStack: 'Tavily Search API + pgvector / Qdrant Hybrid Index',
+            whyItMatters: 'Injects real-time web telemetry and verified citations into model context, eliminating hallucination in production due-diligence.',
+            scalabilityRating: 5,
+          },
+          {
+            id: 'tech_3',
+            component: 'Spatial Relational UI & Topology Canvas',
+            competitorChoice: 'Flat Markdown Tables & Static PDF Reports',
+            recommendedOpenStack: '@xyflow/react Force-Directed Spatial Canvas',
+            whyItMatters: 'Translates multi-dimensional market intelligence into interactive visual node networks with counterfactual simulation.',
+            scalabilityRating: 4,
+          },
+          {
+            id: 'tech_4',
+            component: 'Edge API Routing & Cache Invalidation',
+            competitorChoice: 'Centralized AWS us-east-1 Monoliths',
+            recommendedOpenStack: 'Cloudflare Workers / Edge KV Cache',
+            whyItMatters: 'Terminates TLS and verifies session tokens at global edge nodes, cutting query latency by 50ms+ worldwide.',
+            scalabilityRating: 4,
+          },
+        ];
+      }
+      if (lower.includes('stripe') || lower.includes('payment') || lower.includes('fintech') || lower.includes('plaid')) {
+        return [
+          {
+            id: 'tech_1',
+            component: 'Distributed Transaction Ledger',
+            competitorChoice: 'Legacy Relational DB with Row Locks',
+            recommendedOpenStack: 'CockroachDB / Spanner Distributed ACID Ledger',
+            whyItMatters: 'Guarantees serializable isolation and zero double-spend consistency across globally partitioned payment clusters.',
+            scalabilityRating: 5,
+          },
+          {
+            id: 'tech_2',
+            component: 'Real-Time Fraud & Anomaly Scoring',
+            competitorChoice: 'Batch Rule-Engine Cron Jobs',
+            recommendedOpenStack: 'Apache Flink + Nebius Low-Latency GPU Scoring',
+            whyItMatters: 'Scores transactions in sub-15ms against fraud vectors before funds clearance, reducing false chargeback rates.',
+            scalabilityRating: 5,
+          },
+          {
+            id: 'tech_3',
+            component: 'Sovereign Tokenization Vault',
+            competitorChoice: 'Third-Party Multi-Tenant Token Vault',
+            recommendedOpenStack: 'Dedicated HSM + Air-Gapped KMS Enclave',
+            whyItMatters: 'Maintains PCI-DSS Level 1 compliance while eliminating vendor platform dependency for cardholder data.',
+            scalabilityRating: 5,
+          },
+          {
+            id: 'tech_4',
+            component: 'Global Idempotency Gateway',
+            competitorChoice: 'Application-level In-Memory Redis Locks',
+            recommendedOpenStack: 'Distributed Raft Consensus Idempotency Keys',
+            whyItMatters: 'Prevents duplicate billing charges during network retries or mobile disconnections.',
+            scalabilityRating: 4,
+          },
+        ];
+      }
+      if (lower.includes('supabase') || lower.includes('firebase') || lower.includes('database') || lower.includes('db')) {
+        return [
+          {
+            id: 'tech_1',
+            component: 'Core Data Engine & Multi-Tenancy',
+            competitorChoice: 'Proprietary Cloud NoSQL Document Store',
+            recommendedOpenStack: 'PostgreSQL with Row-Level Security (RLS)',
+            whyItMatters: 'Provides open data portability, standard SQL relational queries, and zero vendor lock-in.',
+            scalabilityRating: 5,
+          },
+          {
+            id: 'tech_2',
+            component: 'Real-Time Change-Data-Capture (CDC)',
+            competitorChoice: 'Proprietary Event Bus with Per-Read Billing',
+            recommendedOpenStack: 'Wal2json + Distributed Elixir / Rust WebSocket Channels',
+            whyItMatters: 'Streams database delta events to thousands of connected clients with sub-20ms broadcast latency.',
+            scalabilityRating: 5,
+          },
+          {
+            id: 'tech_3',
+            component: 'Connection Pooling & Serverless Proxy',
+            competitorChoice: 'Direct TCP Postgres Connections (Exhausts Port Limit)',
+            recommendedOpenStack: 'Supavisor / PgBouncer Connection Pooler',
+            whyItMatters: 'Allows millions of transient serverless functions to query Postgres without exhausting DB connections.',
+            scalabilityRating: 5,
+          },
+          {
+            id: 'tech_4',
+            component: 'Zero-Downtime Point-in-Time Recovery',
+            competitorChoice: 'Nightly Snapshot Dumps with 24hr Data Loss Window',
+            recommendedOpenStack: 'Continuous WAL Archival on S3/Object Storage',
+            whyItMatters: 'Restores database state to any exact second in the past with minimal recovery time objective (RTO).',
+            scalabilityRating: 4,
+          },
+        ];
+      }
+      // Default modern SaaS architecture (e.g. Linear, Plane, Notion, etc.)
+      return [
+        {
+          id: 'tech_1',
+          component: 'Data Layer & Synchronization',
+          competitorChoice: 'Proprietary WebSocket Sync + Multi-tenant Postgres',
+          recommendedOpenStack: 'PostgreSQL + ElectricSQL / Yjs CRDTs',
+          whyItMatters: `Guarantees sub-50ms optimistic local updates in ${entity} while maintaining zero-data-loss conflict-free synchronization across offline network partitions.`,
+          scalabilityRating: 5,
+        },
+        {
+          id: 'tech_2',
+          component: 'Client State & Offline Storage',
+          competitorChoice: 'Custom In-Memory SQLite WebAssembly Cache',
+          recommendedOpenStack: 'OPFS (Origin Private File System) + WASM SQLite',
+          whyItMatters: `Persists workspace data locally on the developer machine, eliminating network roundtrips for search and filter operations in ${entity}.`,
+          scalabilityRating: 5,
+        },
+        {
+          id: 'tech_3',
+          component: 'Realtime Transport & Event Mesh',
+          competitorChoice: 'Custom Node.js WebSocket gateway servers',
+          recommendedOpenStack: 'AnyCable / Centrifugo Distributed WebSockets',
+          whyItMatters: 'Decouples persistent connection management from application backends, scaling to millions of concurrent connections.',
+          scalabilityRating: 4,
+        },
+        {
+          id: 'tech_4',
+          component: 'Edge API Routing & Cache Invalidation',
+          competitorChoice: 'AWS CloudFront + ALB Monoliths in us-east-1',
+          recommendedOpenStack: 'Cloudflare Workers / Fastly Edge Compute',
+          whyItMatters: 'Terminates TLS and verifies JWT session tokens at the global edge, reducing global API request latency.',
+          scalabilityRating: 4,
+        },
+      ];
+    })(),
     // The 4 Moat items on the canvas strictly match the 4 Rubric Pillars
     threatMoatMatrix: [
       {
@@ -377,8 +491,8 @@ export function generateSynthesizedReport(
         externalThreatLevel: 'Low',
         weightPercentage: 30,
         pointContribution: dgPoints,
-        details: 'High friction when exporting historical audit logs, complex cross-team issue linkages, and custom permissions.',
-        mitigation: 'Implement zero-loss 1-click import scripts and native bidirectional synchronization with Jira, GitHub, and Slack.',
+        details: `High friction when exporting historical audit logs, custom schemas, and deep institutional knowledge stored inside ${entity}.`,
+        mitigation: `Implement zero-loss 1-click export scripts and native bidirectional API synchronization to neutralize ${entity}'s data lock-in.`,
       },
       {
         id: 'moat_2',
@@ -388,8 +502,8 @@ export function generateSynthesizedReport(
         externalThreatLevel: 'Low',
         weightPercentage: 30,
         pointContribution: scPoints,
-        details: 'Users who learn command-palette shortcuts (Cmd+K) develop intense muscle memory that strongly resists migration to slower tools.',
-        mitigation: 'Adopt identical or compatible command keymaps and frictionless keyboard navigation from day zero.',
+        details: `Users and teams who embed ${entity} into daily operational routines develop intense workflow muscle memory and operational dependencies.`,
+        mitigation: `Adopt compatible keyboard navigation, ergonomic CLI/API interfaces, and automated migration bridges.`,
       },
       {
         id: 'moat_3',
@@ -399,8 +513,8 @@ export function generateSynthesizedReport(
         externalThreatLevel: 'Elevated',
         weightPercentage: 20,
         pointContribution: regPoints,
-        details: 'Enterprise clients in regulated healthcare, finance, and defense are reluctant to host sensitive issue tracking in multi-tenant SaaS clouds.',
-        mitigation: 'Position sovereign on-prem / VPC Nebius Cloud deployments with strict Zero-Retention LLM guarantees as a key differentiator.',
+        details: `Enterprise clients in regulated healthcare, finance, and defense demand verifiable sovereign data compliance that multi-tenant ${entity} cannot easily guarantee.`,
+        mitigation: 'Position sovereign on-prem / VPC Nebius Cloud deployments with strict Zero-Retention guarantees as a key wedge.',
       },
       {
         id: 'moat_4',
@@ -410,33 +524,111 @@ export function generateSynthesizedReport(
         externalThreatLevel: 'Medium',
         weightPercentage: 20,
         pointContribution: netPoints,
-        details: 'Multiplayer real-time presence, cross-organization guest accounts, and public API developer ecosystems.',
-        mitigation: 'Foster an open-source extension ecosystem and provide open REST/GraphQL webhooks.',
+        details: `Multi-stakeholder collaboration, cross-organization guest access, and third-party developer integrations built around ${entity}.`,
+        mitigation: `Foster an open-source extension ecosystem and provide open webhooks to compete with ${entity}'s distribution.`,
       },
     ],
-    marketWhitespace: [
-      {
-        id: 'ws_1',
-        opportunity: 'Sovereign / Air-Gapped Engineering Workspace',
-        addressableAudience: 'Defense, FinTech, Healthcare, and EU Enterprise',
-        strategicAngle: 'Market a 100% compliant instance hosted on sovereign infrastructure with zero data leakage guarantees.',
-        estimatedImpact: 'Transformative',
-      },
-      {
-        id: 'ws_2',
-        opportunity: 'Autonomous PR Triaging & Bug Clustering',
-        addressableAudience: 'Engineering teams with >50 PRs/day and high alert fatigue',
-        strategicAngle: 'Move beyond passive boards to active agent swarms that reproduce, cluster, and draft automated fixes.',
-        estimatedImpact: 'Very High',
-      },
-      {
-        id: 'ws_3',
-        opportunity: 'Transparent Usage-Based Pricing with Zero Seat Tax',
-        addressableAudience: 'High-growth startups penalized by traditional per-seat license gouging',
-        strategicAngle: 'Charge strictly on active sync compute with transparent, predictable cost pass-through.',
-        estimatedImpact: 'High',
-      },
-    ],
+    marketWhitespace: (() => {
+      if (lower.includes('cursor') || lower.includes('perplexity') || lower.includes('aitos') || lower.includes('ai') || lower.includes('llm') || lower.includes('agent')) {
+        return [
+          {
+            id: 'ws_1',
+            opportunity: 'Sovereign / Air-Gapped Private Model Inference',
+            addressableAudience: 'Regulated Defense, Healthcare, and FinTech enterprises',
+            strategicAngle: 'Deploy zero-retention open-weight models on dedicated Nebius GPU VPCs with verified confidentiality guarantees.',
+            estimatedImpact: 'Transformative',
+          },
+          {
+            id: 'ws_2',
+            opportunity: 'Real-Time Verification & Hallucination Defense',
+            addressableAudience: 'Institutional analysts and software architects requiring verifiable citations',
+            strategicAngle: 'Pair reasoning models with continuous web scraping to verify every factual assertion before rendering.',
+            estimatedImpact: 'Very High',
+          },
+          {
+            id: 'ws_3',
+            opportunity: 'Predictable Token Pass-Through with Zero SaaS Markups',
+            addressableAudience: 'High-volume developer teams penalized by per-seat AI taxes',
+            strategicAngle: 'Bill strictly on raw GPU compute pass-through with transparent token accounting.',
+            estimatedImpact: 'High',
+          },
+        ];
+      }
+      if (lower.includes('stripe') || lower.includes('payment') || lower.includes('fintech') || lower.includes('plaid')) {
+        return [
+          {
+            id: 'ws_1',
+            opportunity: 'Instant Stablecoin & Multi-Rail Settlement',
+            addressableAudience: 'Global cross-border merchants losing 2.9% + 30¢ on interchange fees',
+            strategicAngle: 'Bypass legacy card networks with instant sub-cent stablecoin rails and automatic fiat off-ramping.',
+            estimatedImpact: 'Transformative',
+          },
+          {
+            id: 'ws_2',
+            opportunity: 'Continuous Automated Compliance & Tax Auditing',
+            addressableAudience: 'SaaS platforms operating across 40+ state and international tax jurisdictions',
+            strategicAngle: 'Replace static quarterly audits with continuous programmatic sales tax and nexus validation.',
+            estimatedImpact: 'Very High',
+          },
+          {
+            id: 'ws_3',
+            opportunity: 'Interchange-Free Volume Pass-Through Pricing',
+            addressableAudience: 'High-margin enterprise platforms seeking interchange margin recapture',
+            strategicAngle: 'Charge flat infrastructure subscription pricing rather than confiscating 2.9% of top-line revenue.',
+            estimatedImpact: 'High',
+          },
+        ];
+      }
+      if (lower.includes('supabase') || lower.includes('firebase') || lower.includes('database') || lower.includes('db')) {
+        return [
+          {
+            id: 'ws_1',
+            opportunity: 'Multi-Region Active-Active CRDT Edge Replication',
+            addressableAudience: 'Global platforms needing single-digit millisecond latency worldwide',
+            strategicAngle: 'Eliminate cross-continental DB roundtrips with edge-replicated state and conflict-free CRDT resolution.',
+            estimatedImpact: 'Transformative',
+          },
+          {
+            id: 'ws_2',
+            opportunity: 'Air-Gapped Sovereign On-Premise Deployments',
+            addressableAudience: 'Government, defense, and sovereign enterprise infrastructure teams',
+            strategicAngle: 'Provide a 100% self-hosted, air-gapped distribution with enterprise support and zero telemetry calls.',
+            estimatedImpact: 'Very High',
+          },
+          {
+            id: 'ws_3',
+            opportunity: 'Predictable Pure-Compute Serverless Billing',
+            addressableAudience: 'Startups shocked by unpredictable egress and read-unit invoice spikes',
+            strategicAngle: 'Eliminate per-read API taxation in favor of transparent dedicated compute instances.',
+            estimatedImpact: 'High',
+          },
+        ];
+      }
+      // Default domain-tailored whitespace
+      return [
+        {
+          id: 'ws_1',
+          opportunity: `Sovereign / Air-Gapped ${entity} Workspace`,
+          addressableAudience: 'Regulated Defense, FinTech, Healthcare, and EU Enterprise',
+          strategicAngle: `Market a 100% compliant instance of ${entity}'s core workflows hosted on sovereign infrastructure with zero data leakage.`,
+          estimatedImpact: 'Transformative',
+        },
+        {
+          id: 'ws_2',
+          opportunity: `Autonomous Multi-Agent Workflow Orchestration`,
+          addressableAudience: `Teams with high operational volume and notification fatigue`,
+          strategicAngle: `Move beyond passive dashboards to proactive agent swarms that automate routine coordination tasks.`,
+          estimatedImpact: 'Very High',
+        },
+        {
+          id: 'ws_3',
+          opportunity: `Transparent Usage-Based Pricing with Zero Seat Tax`,
+          addressableAudience: `High-growth organizations penalized by traditional per-seat license models`,
+          strategicAngle: `Charge strictly on active sync compute with transparent, predictable cost pass-through.`,
+          estimatedImpact: 'High',
+        },
+      ];
+    })(),
     citations: sources,
     executionSteps: [
       {

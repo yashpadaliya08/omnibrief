@@ -54,7 +54,7 @@ export function NodeInspectorDrawer({
   return (
     <aside
       aria-label="Node Inspector"
-      className="fixed inset-y-0 right-0 z-50 w-full sm:w-[500px] bg-zinc-950/95 border-l border-zinc-800 backdrop-blur-2xl shadow-2xl flex flex-col animate-in slide-in-from-right duration-300"
+      className="fixed inset-y-0 right-0 z-50 w-full sm:w-[460px] max-w-full bg-zinc-950/95 border-l border-zinc-800 backdrop-blur-2xl shadow-2xl flex flex-col animate-in slide-in-from-right duration-300"
     >
       {/* Drawer Header */}
       <div className="p-5 pb-3 border-b border-zinc-800/90 shrink-0">
@@ -87,7 +87,7 @@ export function NodeInspectorDrawer({
 
         {/* Node Title & Quick Tag */}
         <div className="flex items-baseline justify-between gap-2 mb-3">
-          <h2 className="text-xl font-bold text-white truncate">{getNodeTitle()}</h2>
+          <h2 className="text-lg sm:text-xl font-bold text-white break-words leading-tight" title={getNodeTitle()}>{getNodeTitle()}</h2>
           <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-900 text-zinc-400 border border-zinc-800 shrink-0">
             {String(nodeType)}
           </span>
