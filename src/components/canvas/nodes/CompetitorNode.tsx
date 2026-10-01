@@ -9,7 +9,7 @@ interface CompetitorNodeProps {
   data: CompetitorData;
 }
 
-export function CompetitorNode({ data }: CompetitorNodeProps) {
+export const CompetitorNode = React.memo(function CompetitorNode({ data }: CompetitorNodeProps) {
   const isDirect = data.category === 'direct';
 
   return (
@@ -53,4 +53,4 @@ export function CompetitorNode({ data }: CompetitorNodeProps) {
       </div>
     </div>
   );
-}
+});

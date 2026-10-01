@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { Cpu, ShieldCheck, ExternalLink, Sparkles } from 'lucide-react';
+import { Cpu, ShieldCheck, Sparkles } from 'lucide-react';
 
 interface RootEntityNodeProps {
   data: {
@@ -14,7 +14,7 @@ interface RootEntityNodeProps {
   };
 }
 
-export function RootEntityNode({ data }: RootEntityNodeProps) {
+export const RootEntityNode = React.memo(function RootEntityNode({ data }: RootEntityNodeProps) {
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-emerald-400 bg-emerald-950/70 border-emerald-500/40';
     if (score >= 60) return 'text-amber-400 bg-amber-950/70 border-amber-500/40';
@@ -68,4 +68,4 @@ export function RootEntityNode({ data }: RootEntityNodeProps) {
       </div>
     </div>
   );
-}
+});

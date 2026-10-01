@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import {
   ReactFlow,
   Background,
@@ -22,32 +22,31 @@ import { WhitespaceNode } from './nodes/WhitespaceNode';
 import { NodeInspectorDrawer } from './NodeInspectorDrawer';
 import { IntelligenceReport } from '@/types/omnibrief';
 import { buildGraphFromReport } from '@/lib/graphMapper';
-import { Compass, Filter, RefreshCcw } from 'lucide-react';
+import { Compass } from 'lucide-react';
+
+// Crucial XYFlow optimization: Define nodeTypes statically outside the component
+// to prevent React Flow from re-mounting all nodes on every render frame.
+const STATIC_NODE_TYPES = {
+  rootEntity: RootEntityNode,
+  competitor: CompetitorNode,
+  techStack: TechStackNode,
+  moat: MoatNode,
+  whitespace: WhitespaceNode,
+};
 
 interface IntelligenceCanvasProps {
   report: IntelligenceReport;
   onRefresh?: () => void;
 }
 
-export function IntelligenceCanvas({ report, onRefresh }: IntelligenceCanvasProps) {
-  const nodeTypes = useMemo(
-    () => ({
-      rootEntity: RootEntityNode,
-      competitor: CompetitorNode,
-      techStack: TechStackNode,
-      moat: MoatNode,
-      whitespace: WhitespaceNode,
-    }),
-    []
-  );
-
+export const IntelligenceCanvas = React.memo(function IntelligenceCanvas({ report }: IntelligenceCanvasProps) {
   const initialGraph = useMemo(() => buildGraphFromReport(report), [report]);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialGraph.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialGraph.edges);
 
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
 
-  // Update nodes and edges whenever report changes
+  // Synchronize nodes and edges whenever report updates
   useEffect(() => {
     const next = buildGraphFromReport(report);
     setNodes(next.nodes);
@@ -55,9 +54,13 @@ export function IntelligenceCanvas({ report, onRefresh }: IntelligenceCanvasProp
     setSelectedNode(null);
   }, [report, setNodes, setEdges]);
 
-  const onNodeClick = (_: React.MouseEvent, node: Node) => {
+  const onNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
     setSelectedNode(node);
-  };
+  }, []);
+
+  const handleCloseDrawer = useCallback(() => {
+    setSelectedNode(null);
+  }, []);
 
   return (
     <div className="relative w-full h-[750px] lg:h-[820px] rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-950/70 shadow-2xl backdrop-blur-md">
@@ -85,13 +88,13 @@ export function IntelligenceCanvas({ report, onRefresh }: IntelligenceCanvasProp
         </div>
       </div>
 
-      {/* Main Flow Canvas */}
+      {/* Main Flow Canvas with static nodeTypes */}
       <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        nodeTypes={nodeTypes}
+        nodeTypes={STATIC_NODE_TYPES}
         onNodeClick={onNodeClick}
         fitView
         fitViewOptions={{ padding: 0.15 }}
@@ -123,8 +126,8 @@ export function IntelligenceCanvas({ report, onRefresh }: IntelligenceCanvasProp
       <NodeInspectorDrawer
         selectedNode={selectedNode}
         report={report}
-        onClose={() => setSelectedNode(null)}
+        onClose={handleCloseDrawer}
       />
     </div>
   );
-}
+});

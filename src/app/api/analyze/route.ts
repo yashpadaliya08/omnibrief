@@ -3,7 +3,16 @@ import { searchTavily } from '@/lib/tavily';
 import { callNebiusNemotron, generateSynthesizedReport } from '@/lib/nebius';
 import { IntelligenceReport } from '@/types/omnibrief';
 
+// Server-side in-memory cache to eliminate duplicate network calls and reduce token burn
+interface CacheEntry {
+  report: IntelligenceReport;
+  timestamp: number;
+}
+const REPORT_CACHE = new Map<string, CacheEntry>();
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
 export async function POST(req: NextRequest) {
+  const startTime = Date.now();
   try {
     const body = await req.json();
     const { query, nebiusApiKey, tavilyApiKey, modelName } = body;
@@ -14,6 +23,16 @@ export async function POST(req: NextRequest) {
 
     const cleanQuery = query.trim();
     const effectiveModel = modelName || process.env.NEBIUS_MODEL || 'nvidia/Llama-3.1-Nemotron-70B-Instruct-HF';
+    const cacheKey = `${cleanQuery.toLowerCase()}_${effectiveModel}_${Boolean(nebiusApiKey)}`;
+
+    // Check cache
+    const cached = REPORT_CACHE.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+      return NextResponse.json(
+        { report: cached.report, cached: true, latencyMs: Date.now() - startTime },
+        { headers: { 'X-Cache': 'HIT', 'X-Latency-Ms': String(Date.now() - startTime) } }
+      );
+    }
 
     // Stage 1: Scout Agent - Real-time Tavily search
     const { sources, rawQuery } = await searchTavily(cleanQuery, tavilyApiKey);
@@ -155,7 +174,20 @@ Perform deep technical due-diligence, architecture trade-off evaluation, and cal
       report = generateSynthesizedReport(cleanQuery, sources, effectiveModel);
     }
 
-    return NextResponse.json({ report });
+    // Cache the report
+    REPORT_CACHE.set(cacheKey, { report, timestamp: Date.now() });
+
+    // Evict old cache entries if map exceeds 50 items
+    if (REPORT_CACHE.size > 50) {
+      const oldestKey = REPORT_CACHE.keys().next().value;
+      if (oldestKey) REPORT_CACHE.delete(oldestKey);
+    }
+
+    const latencyMs = Date.now() - startTime;
+    return NextResponse.json(
+      { report, cached: false, latencyMs },
+      { headers: { 'X-Cache': 'MISS', 'X-Latency-Ms': String(latencyMs) } }
+    );
   } catch (err: unknown) {
     console.error('API /api/analyze error:', err);
     return NextResponse.json(

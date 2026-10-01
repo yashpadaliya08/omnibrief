@@ -9,7 +9,7 @@ interface TechStackNodeProps {
   data: TechStackItem;
 }
 
-export function TechStackNode({ data }: TechStackNodeProps) {
+export const TechStackNode = React.memo(function TechStackNode({ data }: TechStackNodeProps) {
   return (
     <div className="relative group min-w-[280px] max-w-[320px] rounded-xl bg-zinc-950/90 border border-cyan-500/40 p-4 shadow-xl shadow-cyan-950/20 backdrop-blur-md transition-all duration-300 hover:border-cyan-400 hover:scale-[1.02]">
       <Handle type="target" position={Position.Top} className="!w-2.5 !h-2.5 !bg-cyan-400 !border-2 !border-zinc-950" />
@@ -48,4 +48,4 @@ export function TechStackNode({ data }: TechStackNodeProps) {
       </p>
     </div>
   );
-}
+});

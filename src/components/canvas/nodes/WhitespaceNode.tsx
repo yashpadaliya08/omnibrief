@@ -9,7 +9,7 @@ interface WhitespaceNodeProps {
   data: WhitespaceOpportunity;
 }
 
-export function WhitespaceNode({ data }: WhitespaceNodeProps) {
+export const WhitespaceNode = React.memo(function WhitespaceNode({ data }: WhitespaceNodeProps) {
   return (
     <div className="relative group min-w-[270px] max-w-[310px] rounded-xl bg-zinc-950/90 border border-emerald-500/40 p-4 shadow-xl shadow-emerald-950/20 backdrop-blur-md transition-all duration-300 hover:border-emerald-400 hover:scale-[1.02]">
       <Handle type="target" position={Position.Left} className="!w-2.5 !h-2.5 !bg-emerald-400 !border-2 !border-zinc-950" />
@@ -42,4 +42,4 @@ export function WhitespaceNode({ data }: WhitespaceNodeProps) {
       </div>
     </div>
   );
-}
+});

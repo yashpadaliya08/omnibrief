@@ -9,7 +9,7 @@ interface MoatNodeProps {
   data: ThreatMoatItem;
 }
 
-export function MoatNode({ data }: MoatNodeProps) {
+export const MoatNode = React.memo(function MoatNode({ data }: MoatNodeProps) {
   const getRiskStyles = (level: string) => {
     switch (level) {
       case 'critical':
@@ -67,4 +67,4 @@ export function MoatNode({ data }: MoatNodeProps) {
       </div>
     </div>
   );
-}
+});
