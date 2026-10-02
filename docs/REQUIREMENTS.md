@@ -16,7 +16,7 @@ All submissions must comply with the following mandatory constraints:
 | Requirement | Specification | OmniBrief Implementation | Compliance Status |
 | :--- | :--- | :--- | :---: |
 | **Inference Infrastructure** | Must run on either **Nebius Token Factory** or **Nebius AI Cloud** | Configured to query Nebius Token Factory endpoints (`https://api.tokenfactory.nebius.com/v1`) | ✅ Verified |
-| **Model Selection** | Must utilize at least one **NVIDIA open-source model** | Uses `nvidia/Llama-3.1-Nemotron-70B-Instruct-HF` & `nvidia/nemotron-4-340b-instruct` | ✅ Verified |
+| **Model Selection** | Must utilize at least one **NVIDIA open-source model** | Uses `nvidia/Nemotron-3_5-Lightning` on Nebius Token Factory GPU | ✅ Verified |
 | **Open Source License** | Public repository with an approved OSI license (MIT, Apache 2.0, MPL 2.0) visible at top level | Top-level [`LICENSE`](../LICENSE) file licensed under **MIT License** | ✅ Verified |
 | **Public Repository** | Accessible Git repo URL (GitHub/GitLab/Bitbucket) | Git initialized, clean commit history, fully self-contained | ✅ Verified |
 | **Working Demo** | Working live URL, hosted app, or verifiable test build | Production Next.js build tested with zero errors; ready for Vercel/Cloudflare | ✅ Verified |
@@ -52,13 +52,17 @@ All submissions must comply with the following mandatory constraints:
 ## 5. Deliverables Checklist
 - [x] Functional web application with Next.js 16 + React 19 + TypeScript
 - [x] `@xyflow/react` visual canvas with 5 custom node types
-- [x] Live Nebius Token Factory client for NVIDIA Nemotron models
-- [x] Live Tavily AI Search integration
+- [x] Live Nebius Token Factory client for `nvidia/Nemotron-3_5-Lightning`
+- [x] 3× parallel Tavily AI Search integration (competitor, architecture, compliance angles)
+- [x] Dynamic moat scores derived per-query (FNV hash + domain trait detection, no hardcoded defaults)
+- [x] Variable node counts (2–6 competitors, 3–5 tech items based on market complexity)
 - [x] Autonomous simulation fallback for zero-setup demoing
-- [x] Slide-in Node Inspector Drawer with live citations
+- [x] Slide-in Node Inspector Drawer with live citations & Nemotron interrogation
+- [x] Strategic War-Game Simulator with Tavily-grounded + Nemotron-evaluated shockwaves
+- [x] Entity-aware dynamic war-game presets (domain-specific: fintech, devtool, AI, database)
 - [x] 1-Click Executive Markdown Dossier export
 - [x] 1-Click Model Context Protocol (MCP) AI Context Pack export
-- [x] In-app API configuration modal with credit activation link
+- [x] In-app API configuration modal with Nebius & Tavily key management
 - [x] Open source MIT License
 - [x] Production build verification (`next build` with Turbopack)
 - [ ] 3-minute YouTube walkthrough video

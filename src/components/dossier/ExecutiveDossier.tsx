@@ -18,6 +18,10 @@ import {
   CheckCircle2,
   Calendar,
   Zap,
+  Globe,
+  Lock,
+  BadgeCheck,
+  XCircle,
 } from 'lucide-react';
 import { IntelligenceReport } from '@/types/omnibrief';
 
@@ -26,7 +30,7 @@ interface ExecutiveDossierProps {
 }
 
 export function ExecutiveDossier({ report }: ExecutiveDossierProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'rubric' | 'competitors' | 'architecture' | 'moats' | 'whitespace' | 'sources'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'rubric' | 'competitors' | 'architecture' | 'moats' | 'whitespace' | 'sources' | 'sovereign'>('overview');
   const [copied, setCopied] = useState(false);
 
   const handleCopyMarkdown = () => {
@@ -154,6 +158,9 @@ export function ExecutiveDossier({ report }: ExecutiveDossierProps) {
         </TabButton>
         <TabButton active={activeTab === 'sources'} onClick={() => setActiveTab('sources')} icon={<ExternalLink className="w-4 h-4" />}>
           Grounded Sources ({report.citations.length})
+        </TabButton>
+        <TabButton active={activeTab === 'sovereign'} onClick={() => setActiveTab('sovereign')} icon={<Globe className="w-4 h-4" />}>
+          🇪🇺 Sovereign Audit{report.sovereignAudit ? ` (${report.sovereignAudit.overallSovereignScore}/100)` : ''}
         </TabButton>
       </div>
 
@@ -423,6 +430,150 @@ export function ExecutiveDossier({ report }: ExecutiveDossierProps) {
                 </div>
               </a>
             ))}
+          </div>
+        )}
+
+        {activeTab === 'sovereign' && (
+          <div className="space-y-6">
+            {report.sovereignAudit ? (
+              <>
+                {/* Header scorecard */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800">
+                    <span className="text-xs text-zinc-500 uppercase font-mono block mb-1">Sovereign Score</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className={`text-3xl font-black font-mono ${
+                        report.sovereignAudit.overallSovereignScore >= 70 ? 'text-emerald-400' :
+                        report.sovereignAudit.overallSovereignScore >= 50 ? 'text-amber-400' : 'text-rose-400'
+                      }`}>{report.sovereignAudit.overallSovereignScore}</span>
+                      <span className="text-xs text-zinc-400">/ 100</span>
+                    </div>
+                    <p className="text-[11px] text-zinc-400 mt-1">Composite EU/GDPR/AI-Act readiness</p>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800">
+                    <span className="text-xs text-zinc-500 uppercase font-mono block mb-1">EU AI Act Tier</span>
+                    <div className={`mt-1 px-3 py-1.5 rounded-lg text-sm font-bold font-mono border inline-block ${
+                      report.sovereignAudit.euAIActTier === 'Minimal Risk' ? 'bg-emerald-950/60 text-emerald-300 border-emerald-500/30' :
+                      report.sovereignAudit.euAIActTier === 'Limited Risk' ? 'bg-amber-950/60 text-amber-300 border-amber-500/30' :
+                      report.sovereignAudit.euAIActTier === 'High Risk' ? 'bg-rose-950/60 text-rose-300 border-rose-500/30' :
+                      'bg-red-950/80 text-red-300 border-red-500/40'
+                    }`}>{report.sovereignAudit.euAIActTier}</div>
+                    <p className="text-[11px] text-zinc-400 mt-2">EU AI Act 2026 classification</p>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800">
+                    <span className="text-xs text-zinc-500 uppercase font-mono block mb-1">Data Residency</span>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Globe className={`w-5 h-5 ${
+                        report.sovereignAudit.dataResidency === 'European Union' ? 'text-emerald-400' :
+                        report.sovereignAudit.dataResidency === 'United States' ? 'text-rose-400' : 'text-amber-400'
+                      }`} />
+                      <span className="font-bold text-sm text-white">{report.sovereignAudit.dataResidency}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 mt-2">
+                      {report.sovereignAudit.zeroRetentionAvailable ? (
+                        <span className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono bg-emerald-950/60 text-emerald-300 border border-emerald-500/30 rounded">
+                          <ShieldCheck className="w-3 h-3" /> Zero-Retention Available
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono bg-zinc-800 text-zinc-400 border border-zinc-700 rounded">
+                          <Lock className="w-3 h-3" /> No Zero-Retention
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* EU AI Act Rationale */}
+                <div className="p-5 rounded-xl bg-amber-950/10 border border-amber-500/20">
+                  <div className="flex items-center gap-2 mb-2">
+                    <BadgeCheck className="w-4 h-4 text-amber-400" />
+                    <span className="text-sm font-bold text-amber-300">EU AI Act Classification Rationale</span>
+                  </div>
+                  <p className="text-xs text-zinc-300 leading-relaxed">{report.sovereignAudit.euAIActTierRationale}</p>
+                </div>
+
+                {/* GDPR Score */}
+                <div className="p-5 rounded-xl bg-zinc-900/60 border border-zinc-800">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-bold text-white">GDPR Compliance Assessment</span>
+                    <span className={`text-xl font-black font-mono ${
+                      report.sovereignAudit.gdprCompliance.score >= 75 ? 'text-emerald-400' :
+                      report.sovereignAudit.gdprCompliance.score >= 55 ? 'text-amber-400' : 'text-rose-400'
+                    }`}>{report.sovereignAudit.gdprCompliance.score}/100</span>
+                  </div>
+                  <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden mb-3">
+                    <div className={`h-full rounded-full transition-all duration-700 ${
+                      report.sovereignAudit.gdprCompliance.score >= 75 ? 'bg-gradient-to-r from-emerald-600 to-emerald-400' :
+                      report.sovereignAudit.gdprCompliance.score >= 55 ? 'bg-gradient-to-r from-amber-600 to-amber-400' :
+                      'bg-gradient-to-r from-rose-600 to-rose-400'
+                    }`} style={{ width: `${report.sovereignAudit.gdprCompliance.score}%` }} />
+                  </div>
+                  <p className="text-xs text-zinc-300 leading-relaxed mb-3">{report.sovereignAudit.gdprCompliance.notes}</p>
+                  {report.sovereignAudit.gdprCompliance.riskAreas.length > 0 && (
+                    <div className="space-y-1.5">
+                      {report.sovereignAudit.gdprCompliance.riskAreas.map((risk, i) => (
+                        <div key={i} className="flex items-start gap-2 text-[11px] text-rose-300">
+                          <XCircle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-rose-400" />
+                          <span>{risk}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Nebius Sovereign Path */}
+                <div className="p-5 rounded-xl bg-indigo-950/20 border border-indigo-500/30">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Cpu className="w-4 h-4 text-indigo-400" />
+                    <span className="text-sm font-bold text-indigo-300">Nebius Sovereign Deployment Path</span>
+                    {report.sovereignAudit.nebiusSovereignPath.available && (
+                      <span className="ml-auto px-2 py-0.5 text-[10px] font-mono bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded">RECOMMENDED</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-zinc-300 leading-relaxed">{report.sovereignAudit.nebiusSovereignPath.recommendation}</p>
+                </div>
+
+                {/* Regulatory Risks & Advantages */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 rounded-xl bg-rose-950/10 border border-rose-500/20">
+                    <h4 className="text-xs font-bold text-rose-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      <AlertTriangle className="w-3.5 h-3.5" />
+                      Regulatory Risk Vectors
+                    </h4>
+                    <ul className="space-y-2">
+                      {report.sovereignAudit.regulatoryRisks.map((risk, i) => (
+                        <li key={i} className="flex items-start gap-2 text-[11px] text-zinc-300">
+                          <XCircle className="w-3 h-3 shrink-0 mt-0.5 text-rose-400" />
+                          <span>{risk}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="p-4 rounded-xl bg-emerald-950/10 border border-emerald-500/20">
+                    <h4 className="text-xs font-bold text-emerald-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      Compliance Advantages
+                    </h4>
+                    <ul className="space-y-2">
+                      {report.sovereignAudit.complianceAdvantages.map((adv, i) => (
+                        <li key={i} className="flex items-start gap-2 text-[11px] text-zinc-300">
+                          <CheckCircle2 className="w-3 h-3 shrink-0 mt-0.5 text-emerald-400" />
+                          <span>{adv}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <p className="text-[10px] text-zinc-600 font-mono text-right">
+                  EU AI Act Sovereign Audit generated: {new Date(report.sovereignAudit.auditGeneratedAt).toUTCString()}
+                </p>
+              </>
+            ) : (
+              <div className="text-center py-8 text-zinc-500 text-sm">Sovereign audit not available for this report.</div>
+            )}
           </div>
         )}
       </div>

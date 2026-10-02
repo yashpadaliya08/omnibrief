@@ -14,6 +14,8 @@ import {
   ArrowLeftRight,
   MessageSquare,
   FileCheck,
+  Link2,
+  Dna,
 } from 'lucide-react';
 import { IntelligenceReport } from '@/types/omnibrief';
 import { NodeInterrogator } from './NodeInterrogator';
@@ -54,6 +56,7 @@ export function NodeInspectorDrawer({
   return (
     <aside
       aria-label="Node Inspector"
+      data-export-ignore="true"
       className="fixed inset-y-0 right-0 z-50 w-full sm:w-[460px] max-w-full bg-zinc-950/95 border-l border-zinc-800 backdrop-blur-2xl shadow-2xl flex flex-col animate-in slide-in-from-right duration-300"
     >
       {/* Drawer Header */}
@@ -370,6 +373,54 @@ export function NodeInspectorDrawer({
         {/* TAB 3: Grounded Sources & Citations */}
         {activeTab === 'sources' && (
           <div className="space-y-3">
+            {/* Feature A: Citation DNA — show per-pillar citations when a moat node is selected */}
+            {nodeType === 'moat' && report.citationDNA && (() => {
+              const pillarName = String(data.factor || '');
+              const dnaMatch = report.citationDNA?.find(
+                d => d.pillar === pillarName ||
+                     pillarName.includes(d.pillar.split(' ')[0])
+              );
+              if (!dnaMatch) return null;
+              return (
+                <div className="p-4 rounded-xl bg-indigo-950/20 border border-indigo-500/30 space-y-3 mb-2">
+                  <div className="flex items-center gap-2">
+                    <Dna className="w-4 h-4 text-indigo-400" />
+                    <span className="text-xs font-bold text-indigo-300 uppercase tracking-wider">Citation DNA — {dnaMatch.pillar}</span>
+                    <span className={`ml-auto px-2 py-0.5 text-[10px] font-mono rounded border ${
+                      dnaMatch.overallConfidence >= 80 ? 'bg-emerald-950/60 text-emerald-300 border-emerald-500/30' :
+                      dnaMatch.overallConfidence >= 60 ? 'bg-amber-950/60 text-amber-300 border-amber-500/30' :
+                      'bg-zinc-800 text-zinc-400 border-zinc-700'
+                    }`}>{dnaMatch.overallConfidence}% confident</span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400 italic line-clamp-3 leading-relaxed border-l-2 border-indigo-500/30 pl-2">
+                    &ldquo;{dnaMatch.claimText}&rdquo;
+                  </p>
+                  {dnaMatch.matchedSources.length > 0 ? (
+                    <div className="space-y-2">
+                      {dnaMatch.matchedSources.map((src, si) => (
+                        <a key={si} href={src.url} target="_blank" rel="noreferrer"
+                          className="block p-2.5 rounded-lg bg-zinc-900 border border-zinc-800 hover:border-indigo-500/40 transition-all group">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[11px] font-semibold text-zinc-200 group-hover:text-indigo-300 transition-colors line-clamp-1">{src.title}</span>
+                            <span className="ml-2 shrink-0 px-1.5 py-0.5 text-[9px] font-mono bg-indigo-900/60 text-indigo-300 rounded border border-indigo-500/20">
+                              {src.relevanceScore}% match
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-zinc-500 line-clamp-2 leading-relaxed">{src.excerpt}</p>
+                          <div className="flex items-center gap-1 mt-1">
+                            <Link2 className="w-2.5 h-2.5 text-zinc-600" />
+                            <span className="text-[9px] text-zinc-600 truncate">{src.url}</span>
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-[11px] text-zinc-500 italic">No direct citation matches — evidence derived from domain reasoning.</p>
+                  )}
+                </div>
+              );
+            })()}
+
             <div className="flex items-center justify-between text-xs text-zinc-400 pb-1">
               <span>Primary Grounded Citations (Tavily AI)</span>
               <span className="font-mono text-[10px]">{report.citations.length} Verified</span>

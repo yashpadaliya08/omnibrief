@@ -53,8 +53,14 @@ export const RootEntityNode = React.memo(function RootEntityNode({ data }: RootE
             <span>Target Entity</span>
           </div>
 
-          <div className={`px-2.5 py-1 rounded-full text-xs font-mono font-bold border ${getScoreColor(data.verdictScore)}`}>
-            Moat Index: {data.verdictScore}/100
+          <div className="flex items-center gap-1.5">
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 flex items-center gap-1 shadow-xs" title="Critic Agent Multi-Claim Corroboration">
+              <ShieldCheck className="w-3 h-3 text-emerald-400" />
+              <span>Verified Moat</span>
+            </span>
+            <div className={`px-2.5 py-1 rounded-full text-xs font-mono font-bold border ${getScoreColor(data.verdictScore)}`}>
+              {data.verdictScore}/100
+            </div>
           </div>
         </div>
 

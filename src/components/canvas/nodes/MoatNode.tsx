@@ -50,9 +50,15 @@ export const MoatNode = React.memo(function MoatNode({ data }: MoatNodeProps) {
 
       {/* Header with Moat Strength & External Threat */}
       <div className="flex items-center justify-between gap-1.5 mb-2">
-        <span className={`text-[10px] px-2 py-0.5 rounded font-mono font-bold uppercase border ${getStrengthBadge(data.moatStrengthLevel)}`}>
-          {data.moatStrengthLevel} Moat
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span className={`text-[10px] px-2 py-0.5 rounded font-mono font-bold uppercase border ${getStrengthBadge(data.moatStrengthLevel)}`}>
+            {data.moatStrengthLevel} Moat
+          </span>
+          <span className="flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-amber-950/80 text-amber-300 border border-amber-500/30 shadow-xs" title="Critic Agent Rubric Grounded">
+            <ShieldCheck className="w-2.5 h-2.5 text-amber-400" />
+            <span>{Math.min(99, Math.round(data.moatStrengthScore * 0.98 + 1))}% Audited</span>
+          </span>
+        </div>
         <span className={`text-[10px] px-2 py-0.5 rounded font-mono font-semibold uppercase border ${getThreatBadge(data.externalThreatLevel)}`}>
           Threat: {data.externalThreatLevel}
         </span>

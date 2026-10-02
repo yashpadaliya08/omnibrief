@@ -1,6 +1,31 @@
 export type MoatStrengthLevel = 'Moderate' | 'Strong' | 'Dominant';
 export type ExternalThreatLevel = 'Low' | 'Medium' | 'Elevated';
 export type NodeWarGameImpact = 'strengthened' | 'squeezed' | 'disrupted' | 'neutral';
+export type EUAIActRiskTier = 'Minimal Risk' | 'Limited Risk' | 'High Risk' | 'Unacceptable Risk';
+export type DataResidency = 'European Union' | 'United States' | 'Global Multi-Region' | 'Unknown';
+
+// Feature A: Live Citation DNA
+export interface CitationDNAMatch {
+  pillar: string;          // e.g. 'Data Gravity & History'
+  claimText: string;       // the evidence sentence
+  matchedSources: Array<{ title: string; url: string; excerpt: string; relevanceScore: number }>;
+  overallConfidence: number; // 0-100
+}
+
+// Feature D: EU AI Act Sovereign Scorecard
+export interface SovereignAudit {
+  entityName: string;
+  euAIActTier: EUAIActRiskTier;
+  euAIActTierRationale: string;
+  dataResidency: DataResidency;
+  gdprCompliance: { score: number; notes: string; riskAreas: string[] };
+  zeroRetentionAvailable: boolean;
+  nebiusSovereignPath: { available: boolean; recommendation: string };
+  overallSovereignScore: number;   // 0-100
+  regulatoryRisks: string[];
+  complianceAdvantages: string[];
+  auditGeneratedAt: string;
+}
 
 export interface TavilySource {
   title: string;
@@ -146,6 +171,10 @@ export interface IntelligenceReport {
   measuredLatencyMs?: number;
   activeWarGame?: WarGameScenario | null;
   headToHead?: HeadToHeadBattleCard | null;
+  // Feature A: Live Citation DNA per moat pillar
+  citationDNA?: CitationDNAMatch[];
+  // Feature D: EU AI Act Sovereign Scorecard
+  sovereignAudit?: SovereignAudit;
 }
 
 export type CanvasNodeType = 'rootEntity' | 'competitor' | 'techStack' | 'moat' | 'whitespace' | 'sharedClash';

@@ -4,7 +4,7 @@
 
 [![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Nebius Token Factory](https://img.shields.io/badge/Nebius-Token%20Factory-indigo)](https://tokenfactory.nebius.com/)
-[![NVIDIA Nemotron](https://img.shields.io/badge/NVIDIA-Nemotron%203%20Ultra-76B900)](https://build.nvidia.com/)
+[![NVIDIA Nemotron](https://img.shields.io/badge/NVIDIA-Nemotron--3.5--Lightning-76B900)](https://build.nvidia.com/)
 [![Tavily AI Search](https://img.shields.io/badge/Tavily-Live%20Search%20API-emerald)](https://tavily.com/)
 [![Next.js 16](https://img.shields.io/badge/Next.js-16%20Turbopack-black)](https://nextjs.org/)
 [![React 19](https://img.shields.io/badge/React-19-cyan)](https://react.dev/)
@@ -16,11 +16,12 @@
 **OmniBrief** transforms hours of manual competitive research, technology stack teardowns, and defensibility evaluations into an **instant, interactive visual intelligence canvas and executive memo**.
 
 Instead of producing another wall of static markdown text, OmniBrief orchestrates a swarm of **NVIDIA Nemotron models on Nebius Token Factory** and **Tavily AI Search** to build a dynamic, relational node-graph topology that visualizes:
-1. **Target Entity & Moat Index (0–100)**
-2. **Direct, Adjacent, & Emerging Competitors** (pricing, market share, strengths, vulnerabilities)
-3. **Architecture & Technology Teardowns** (incumbent proprietary choices vs. recommended open stack on Nebius)
-4. **Threat & Defensibility Matrix** (data gravity, cloud lock-in, unit economics, and strategic countermeasures)
-5. **Market White-Space Opportunities** (untapped wedges, target audiences, and high-impact differentiation)
+1. **Target Entity & Moat Index (0–100)** — dynamically scored per-query (no hardcoded defaults)
+2. **Direct, Adjacent, & Emerging Competitors** (2–6 nodes, variable count based on market fragmentation)
+3. **Architecture & Technology Teardowns** (incumbent choices vs. recommended open stack on Nebius GPU)
+4. **Threat & Defensibility Matrix** (data gravity, switching costs, regulatory compliance, network effects)
+5. **Market White-Space Opportunities** (domain-specific untapped wedges, target audiences, strategic angles)
+6. **Strategic War-Game Simulator** (Tavily-grounded + Nemotron-evaluated counterfactual shockwaves)
 
 ---
 
@@ -62,8 +63,9 @@ Instead of producing another wall of static markdown text, OmniBrief orchestrate
 ## 🚀 Key Features
 
 - **Interactive Dynamic Canvas (@xyflow/react):** Explore competitive ecosystems visually with color-coded nodes, animated edges, minimap, and click-to-inspect drawers.
-- **NVIDIA Nemotron Models on Nebius Token Factory:** Deep reasoning using `nvidia/Llama-3.1-Nemotron-70B-Instruct-HF` and `nvidia/nemotron-4-340b-instruct` deployed on Nebius high-performance GPU cloud.
-- **Tavily Live Grounding:** Automatically queries and cites real-time web intelligence, pricing changes, and GitHub issue discussions.
+- **NVIDIA Nemotron-3.5-Lightning on Nebius Token Factory:** Deep reasoning using `nvidia/Nemotron-3_5-Lightning` on Nebius high-performance GPU cloud. Zero data retention, sub-second TTFT.
+- **3× Parallel Tavily Live Grounding:** Fires 3 domain-targeted Tavily searches in parallel (competitors, architecture, compliance) to build multi-angle grounding context from live web citations.
+- **Strategic War-Game Simulator:** Stress-test entity defensibility with hypothetical market shockwaves. Scenarios are Tavily-grounded and Nemotron-evaluated. Entity-aware presets auto-generate based on the target domain.
 - **1-Click Executive Export:**
   - **Export Dossier (`.md`):** Formatted executive report ready for VCs, founders, and engineering teams.
   - **MCP Context Pack (`.json`):** Standard Model Context Protocol bundle that can be dropped directly into Cursor, Claude Desktop, or Windsurf.
@@ -99,10 +101,10 @@ npm install
 ### 3. Configure Environment Variables (Optional)
 Create a `.env.local` file:
 ```env
-# Nebius Token Factory API Key (Claim $25 free credits with code NEBIUS-DEVPOST-GLOBAL26)
+# Nebius Token Factory API Key
 NEBIUS_API_KEY=your_nebius_api_key_here
 NEBIUS_BASE_URL=https://api.tokenfactory.nebius.com/v1
-NEBIUS_MODEL=nvidia/Llama-3.1-Nemotron-70B-Instruct-HF
+NEBIUS_MODEL=nvidia/Nemotron-3_5-Lightning
 
 # Tavily AI Search API Key
 TAVILY_API_KEY=your_tavily_api_key_here

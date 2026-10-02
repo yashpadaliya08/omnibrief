@@ -312,6 +312,73 @@ export default function HomePage() {
           )}
         </section>
 
+        {/* Live GPU vs Demo Mode Prominent Banner */}
+        {report.executionMode === 'Live Nebius Token Factory' || Boolean(config.nebiusApiKey) ? (
+          <section className="relative overflow-hidden rounded-2xl border border-emerald-500/40 bg-gradient-to-r from-emerald-950/60 via-zinc-900/90 to-indigo-950/60 p-4 shadow-xl backdrop-blur-md">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-lg shadow-emerald-500/20 shrink-0">
+                  <Cpu className="w-5 h-5 animate-pulse" />
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-zinc-950" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-300">
+                      Live NVIDIA GPU Acceleration Active
+                    </span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      Nebius Token Factory
+                    </span>
+                  </div>
+                  <p className="text-xs text-zinc-400">
+                    Executing on <span className="text-zinc-200 font-mono font-semibold">{config.modelName || 'nvidia/Nemotron-3_5-Lightning'}</span> with real-time critic verification & dynamic multi-agent streaming.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                <button
+                  onClick={() => setConfigModalOpen(true)}
+                  className="px-3 py-1.5 rounded-xl text-xs font-mono font-semibold bg-zinc-900/90 hover:bg-zinc-800 text-zinc-300 border border-zinc-700/80 transition-all cursor-pointer"
+                >
+                  Configure Cluster
+                </button>
+              </div>
+            </div>
+          </section>
+        ) : (
+          <section className="relative overflow-hidden rounded-2xl border border-amber-500/50 bg-gradient-to-r from-amber-950/50 via-zinc-900/90 to-purple-950/40 p-4 shadow-xl backdrop-blur-md">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-lg shadow-amber-500/20 shrink-0">
+                  <Zap className="w-5 h-5 text-amber-400" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-mono font-bold uppercase tracking-wider text-amber-300">
+                      Demo Mode / Synthesis Baseline Active
+                    </span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                      Offline Grounding
+                    </span>
+                  </div>
+                  <p className="text-xs text-zinc-400">
+                    Currently utilizing pre-computed verified intelligence & deterministic synthesis. Connect your Nebius Token Factory API key to activate live 70B GPU streaming.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+                <button
+                  onClick={() => setConfigModalOpen(true)}
+                  className="px-3.5 py-2 rounded-xl text-xs font-bold font-mono bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 shadow-lg shadow-amber-500/20 transition-all cursor-pointer flex items-center gap-1.5"
+                >
+                  <Zap className="w-3.5 h-3.5 fill-current" />
+                  <span>⚡ Activate Live GPU Mode</span>
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* View Toggle Bar */}
         <section className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-1 p-1 rounded-xl bg-zinc-900 border border-zinc-800 text-xs font-semibold">
@@ -367,6 +434,7 @@ export default function HomePage() {
               onApplyWarGame={handleApplyWarGame}
               onResetWarGame={handleResetWarGame}
               nebiusApiKey={config.nebiusApiKey}
+              tavilyApiKey={config.tavilyApiKey}
               modelName={config.modelName}
             />
           )}
@@ -381,6 +449,7 @@ export default function HomePage() {
                 onApplyWarGame={handleApplyWarGame}
                 onResetWarGame={handleResetWarGame}
                 nebiusApiKey={config.nebiusApiKey}
+                tavilyApiKey={config.tavilyApiKey}
                 modelName={config.modelName}
               />
               <ExecutiveDossier report={report} />
@@ -398,7 +467,7 @@ export default function HomePage() {
             <span>Built for the Nebius x NVIDIA Global AI Hackathon</span>
           </div>
           <div className="flex items-center gap-4 text-[11px]">
-            <span className="text-indigo-400 font-mono">NVIDIA Llama-3.1-Nemotron-70B-Instruct</span>
+            <span className="text-indigo-400 font-mono">{config.modelName.replace('nvidia/', 'NVIDIA ')}</span>
             <span className="text-zinc-700">•</span>
             <span className="text-cyan-400 font-mono">Nebius Token Factory</span>
             <span className="text-zinc-700">•</span>

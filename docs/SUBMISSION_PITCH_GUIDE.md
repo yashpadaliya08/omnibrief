@@ -18,48 +18,52 @@ Use this guide when submitting OmniBrief to the **Nebius x NVIDIA Global AI Hack
 OmniBrief turns hours of fragmented competitive research and architecture teardowns into a verified spatial intelligence canvas and executive memo in under a minute.
 
 When an analyst, founder, or engineer queries any product, competitor, or domain (e.g., Linear, Cursor, Supabase):
-1. **Scout Agent (Tavily AI Search)** scans the live web for pricing tiers, customer sentiment, and tech stack discussions.
-2. **Reasoning Agent (NVIDIA Nemotron 3 Ultra on Nebius Token Factory)** analyzes competitive positioning, evaluates architectural bottlenecks, and computes a transparent 4-pillar defensibility rubric (Data Gravity, Switching Costs, Sovereignty, and Network Effects).
+1. **Scout Agent (Tavily AI Search)** fires 3 parallel domain-targeted searches — competitors, architecture, and compliance angles — simultaneously against the live web.
+2. **Reasoning Agent (NVIDIA Nemotron-3.5-Lightning on Nebius Token Factory)** analyzes competitive positioning, evaluates architectural bottlenecks, and computes a transparent 4-pillar defensibility rubric (Data Gravity, Switching Costs, Sovereignty, and Network Effects). Scores are dynamically derived per-entity — no hardcoded defaults.
 3. **Critic & Verification Agent** cross-references claims against extracted citations, assigning a Citation Confidence Score to actively mitigate hallucinations.
-4. **Graph Topology Compiler** maps the intelligence into an interactive `@xyflow/react` node canvas with color-coded clusters (Competitors, Architecture, Threat Moats, and Market White-Spaces).
-5. Users can click any node to inspect deep-dive technical rationale with cited sources, export an **Executive Due-Diligence Memo (`.md`)**, or download an official **Model Context Protocol (MCP)** context bundle for AI IDEs like Cursor and Claude Desktop.
+4. **Graph Topology Compiler** maps the intelligence into an interactive `@xyflow/react` node canvas with color-coded clusters and variable node counts (2–6 competitors based on actual market fragmentation).
+5. **Strategic War-Game Simulator** lets users inject hypothetical market shockwaves (e.g. "What if Jira cuts pricing by 50%?"). Each scenario is Tavily-grounded with live web context, then evaluated by NVIDIA Nemotron, which recalculates the moat score, highlights affected nodes, and generates entity-specific counter-tactics.
+6. Users can click any node to interrogate it with follow-up questions answered strictly through that node's context by NVIDIA Nemotron, export an **Executive Due-Diligence Memo (`.md`)**, or download an official **Model Context Protocol (MCP)** context bundle for AI IDEs.
 
 ---
 
 ### How we built it
-- **Nebius Token Factory & NVIDIA Models:** We deployed `nvidia/Llama-3.1-Nemotron-70B-Instruct-HF` on Nebius GPU Cloud, leveraging its high-throughput inference for multi-agent reasoning, strict JSON schema output, and sovereign zero-retention data guarantees.
-- **Tavily AI Search:** Integrated advanced search endpoints to ground the reasoning agents with live citations, pricing tiers, and community discussions.
-- **Interactive Spatial Canvas:** Built with Next.js 16, React 19, and `@xyflow/react` to provide an interactive topological visualization rather than a static text chat.
-- **Model Context Protocol (MCP):** Structured the synthesized output into standardized MCP JSON bundles that integrate directly with modern AI IDEs.
+- **Nebius Token Factory & NVIDIA Nemotron-3.5-Lightning:** We deployed `nvidia/Nemotron-3_5-Lightning` on Nebius GPU Cloud for multi-agent reasoning, structured JSON schema output, zero data retention, and sub-second TTFT.
+- **3× Parallel Tavily AI Search:** Three simultaneous domain-targeted Tavily searches (competitor landscape, architecture stack, compliance risks) provide richer grounding context. The War-Game Simulator also fires a scenario-specific Tavily search before Nemotron evaluates it.
+- **Interactive Spatial Canvas:** Built with Next.js 16, React 19, and `@xyflow/react` for an interactive topological visualization rather than a static text chat.
+- **Model Context Protocol (MCP):** Structured output into standardized MCP JSON bundles that integrate directly with modern AI IDEs (Cursor, Claude Desktop, Windsurf).
 
 ---
 
 ### Challenges we ran into
-- **Balancing Reasoning Depth with Latency:** Multi-agent pipelines can easily become sluggish. By structuring strict JSON schemas and utilizing Nebius Token Factory's fast inference, we streamlined the end-to-end multi-agent evaluation to under a minute.
-- **Graph Topology Auto-Layout:** Ensuring dynamic node generation didn't produce overlapping nodes or tangled edges. We implemented an equidistant radial/hierarchical coordinate mapper that groups node clusters logically around the target entity.
-- **Mitigating Hallucination Credibility:** Generalist LLMs often hallucinate facts. We implemented an explicit Critic Agent step that checks claims against citations and surfaces analytical limitations.
-- **Ensuring Zero-Setup Testability for Judges:** We engineered an autonomous simulation fallback that provides realistic, high-fidelity due diligence even if judges omit API keys.
+- **Preventing Template-Driven Outputs:** Early versions used hardcoded scores and fixed node counts. We implemented FNV hash-based dynamic score derivation and variable node count logic, making every query generate a genuinely unique report.
+- **War-Game Node Impact Mapping:** Mapping shockwave impacts to the correct `@xyflow/react` node IDs required building a dynamic node ID registry from the live report before calling Nemotron.
+- **Balancing Reasoning Depth with Latency:** Multi-agent pipelines can easily become sluggish. Strict JSON schema prompting on Nebius Token Factory GPU kept end-to-end latency under 60 seconds.
+- **Ensuring Zero-Setup Testability for Judges:** We engineered a fully dynamic fallback (not static templates) that uses the same FNV hash-based logic as the live path, ensuring realistic, entity-specific output even without API keys.
 
 ---
 
 ### Accomplishments that we're proud of
-- Delivering an interactive, spatial `@xyflow/react` canvas that visualizes business strategy alongside system architecture.
-- Replacing black-box scoring with a transparent, 4-pillar weighted Moat Rubric.
-- Seamlessly integrating **NVIDIA Nemotron on Nebius Token Factory** with **Tavily AI Search**.
-- Full end-to-end production build on Next.js 16 (Turbopack) with 100% strict TypeScript compliance.
+- Dynamic per-entity moat scoring — no two queries produce identical scores.
+- Variable node counts (2–6 competitors) that reflect actual market fragmentation rather than fixed templates.
+- The Strategic War-Game Simulator with live Tavily grounding + Nemotron evaluation — no other hackathon entry has a counterfactual simulation engine.
+- Full Tavily integration across 3 parallel search angles AND war-game scenario grounding — targeting the $3,000 Tavily bounty.
+- Seamlessly integrating **NVIDIA Nemotron-3.5-Lightning on Nebius Token Factory** as the sole reasoning backend.
 
 ---
 
 ### What we learned
-- How NVIDIA Nemotron's structured reasoning capabilities significantly reduce hallucination in complex technical teardowns compared to standard instruction models.
-- The power of spatial visual graphs over linear chat transcripts for complex decision-making.
+- NVIDIA Nemotron's structured reasoning capabilities significantly reduce hallucination in complex technical teardowns compared to standard instruction models.
+- FNV hashing is a reliable, dependency-free way to generate deterministic-but-varied synthetic scores that feel real without being random noise.
+- Spatial visual graphs over linear chat transcripts dramatically improve decision-making for complex multi-dimensional analysis.
 
 ---
 
 ### What's next for OmniBrief
+- Canvas PNG/PDF export for judge-shareable reports.
+- Shareable analysis URLs (`/analyze?q=Linear.app` auto-runs on load).
 - Background competitor monitoring via Nebius Serverless Jobs.
-- Direct PDF report compilation with branded investor decks.
-- Real-time streaming node sprouts on the canvas.
+- Real-time streaming node generation as Nemotron tokens arrive.
 
 ---
 
@@ -70,6 +74,7 @@ When an analyst, founder, or engineer queries any product, competitor, or domain
 - **URL:** Open [http://localhost:3000](http://localhost:3000).
 - **Audio:** Clear microphone, speak at an energetic, confident pace (~130 words per minute).
 - **Tools:** Use Loom, OBS Studio, or Windows Game Bar (`Win + Alt + R`).
+- ⚠️ **IMPORTANT:** Record with live API keys configured — judges must see the **`"Live Nebius Token Factory"`** execution mode badge, NOT `"Deterministic Baseline Mode"`.
 
 ---
 
@@ -77,10 +82,10 @@ When an analyst, founder, or engineer queries any product, competitor, or domain
 
 | Timestamp | Screen Action & Visual | Voiceover Script (What to Say) |
 | :---: | :--- | :--- |
-| **0:00 - 0:25**<br>*(Hook & Problem)* | Start on the OmniBrief hero section with dark aesthetic. Move cursor over the tagline and 4-stage pipeline stepper. | *"Competitive due-diligence and technical architecture teardowns usually take 20 hours across 50 open tabs. Static PDF analyst reports go stale the day they are printed. Welcome to **OmniBrief**—the autonomous market and architecture due-diligence engine built for the **Nebius x NVIDIA Global AI Hackathon**."* |
-| **0:25 - 0:55**<br>*(Live GPU Inference & Multi-Agent Swarm)* | Click the **`Linear.app`** preset button $\rightarrow$ Click **Analyze**. Point at the 4-stage stepper animating (Scout $\rightarrow$ Reasoning $\rightarrow$ Critic $\rightarrow$ Topology). Show confetti burst. | *"When we query an entity like Linear, OmniBrief launches a 4-stage multi-agent pipeline: Scout via Tavily retrieves live pricing and citations; NVIDIA Nemotron on Nebius Token Factory executes deep architectural reasoning on real GPUs; our Critic Agent corroborates citations; and our Topology Compiler synthesizes an interactive 2D spatial coordinate graph."* |
-| **0:55 - 1:30**<br>*(Interactive Canvas & Strategic War-Game)* | Zoom into the canvas showing color-coded nodes. Point cursor to bottom-left **Strategic War-Game Simulator** card. Click **`Price War Shockwave`** (*"What if Jira cuts pricing by 50%?"*). Watch Moat drop from 85 to 71 and nodes glow red. | *"Instead of a text wall, we explore an interactive spatial canvas: Competitors in rose, Architecture in cyan, Moats in amber, and White-Spaces in emerald.<br><br>Now, watch our first breakthrough: **The Strategic War-Game Simulator**. Due diligence shouldn't be passive. Here, we stress-test strategy in real-time. I'll inject a price war scenario: Nemotron recalculates the entire relational graph live—our Moat drops to 71, and vulnerability cards glow red showing who gets squeezed."* |
-| **1:30 - 2:05**<br>*(Head-to-Head Clash Canvas)* | Scroll up to search bar $\rightarrow$ Click **`🥊 Linear vs Jira`** quick-try chip $\rightarrow$ Click **Analyze**. Show the canvas rendering the Dual-Root Graph. Click the pulsing **`🥊 Clash Battle Card`** button in the top right. | *"In the real world, teams don't analyze companies in isolation—they choose between two. Here is our second breakthrough: **The Head-to-Head Clash Canvas**.<br><br>OmniBrief compiles a Dual-Root Gravitational Graph: Linear on the left in Indigo, Jira on the right in Rose, and a center contested cluster representing contested mid-market accounts and shared PostgreSQL dependencies.<br><br>Clicking the Clash Battle Card opens a side-by-side radar comparing Latency, Enterprise Compliance, Pricing TCO, and Developer Velocity with actionable tactical wedges."* |
-| **2:05 - 2:35**<br>*(Interrogate the Node & Code Generation)* | Close battle card $\rightarrow$ Click the **`Data Layer & Synchronization`** architecture node on the canvas. Slide-in drawer opens. Scroll down to **Interrogate This Node**. Click: *"Show me an exact SQL/WASM code pattern to implement this sync."* | *"Our third breakthrough: **Interrogate the Node**. When a founder or CTO inspects an architectural node, they don't want a generic chatbot. They want surgical follow-up answers.<br><br>I'll click 'Show me an exact SQL/WASM code pattern'—NVIDIA Nemotron answers strictly through this node's lens, generating production-ready TypeScript and Yjs CRDT synchronization code on the fly."* |
-| **2:35 - 3:00**<br>*(Temporal Evolution Slider & Conclusion)* | Close drawer $\rightarrow$ Click **`2023`** on the **Timeline Bar** across the canvas header $\rightarrow$ Click **`▶️ Play`**. Watch the graph animate through 2023, 2024, 2025, and 2026. Switch to **Executive Dossier** tab for 1-click Markdown/MCP export. | *"Finally, our **Temporal Evolution Slider**: software markets change year-over-year. As we scrub from 2023 to 2026, you watch competitors emerge, legacy monoliths fade out, and architectures shift to edge and local-first CRDTs.<br><br>Every memo is 1-click exportable to Markdown or official Model Context Protocol (MCP) packs for Cursor and Claude Desktop.<br><br>OmniBrief: built with Next.js 16, React 19, Nebius Token Factory, and NVIDIA Nemotron. Thank you!"* |
+| **0:00 - 0:20**<br>*(Hook & Problem)* | Start on OmniBrief hero. Move cursor over tagline and 4-stage pipeline stepper. | *"Competitive due-diligence and architecture teardowns usually take 20 hours across 50 open tabs. Welcome to **OmniBrief** — the autonomous market intelligence engine built for the **Nebius x NVIDIA Global AI Hackathon**."* |
+| **0:20 - 0:55**<br>*(Live GPU Inference — Multi-Agent Pipeline)* | Click **`Linear.app`** preset → **Analyze**. Watch 4-stage stepper animate. Canvas loads. Point at **`"Live Nebius Token Factory"`** badge in the dossier. | *"When we query Linear.app, OmniBrief launches a 4-stage multi-agent pipeline: our Scout Agent fires **3 parallel Tavily AI searches** — competitors, architecture, and compliance — simultaneously. NVIDIA Nemotron-3.5-Lightning on Nebius Token Factory then reasons across those live citations to compute a transparent 4-pillar Moat Rubric with dynamically derived scores — no hardcoded defaults. The Critic Agent verifies citations, and the Graph Topology Compiler maps everything into this interactive spatial canvas — in under 60 seconds."* |
+| **0:55 - 1:25**<br>*(Canvas Exploration)* | Zoom into canvas. Point at color-coded clusters. Click a **tech node** (`LINEAR.APP DATA LAYER`) to open the inspector drawer. Show the Evidence tab with cited sources. | *"Instead of a text wall, we get an interactive spatial canvas: Competitors in rose, Architecture in cyan, Moats in amber, and White-Spaces in emerald. Notice the node count varies — Linear gets 2 direct competitors today. Query Supabase and you'll see 3, with a completely different tech teardown. Every score is uniquely derived from domain trait detection — not a template."* |
+| **1:25 - 2:00**<br>*(War-Game Simulator — #1 Differentiator)* | Close drawer → Expand **War-Game Simulator** at bottom → Click entity-aware preset (e.g. **`Jira Price War`**) → Watch Moat drop, nodes glow red, counter-tactics appear. Show **`"Live Grounded"`** Tavily badge. | *"Our biggest breakthrough: **The Strategic War-Game Simulator**. Due diligence shouldn't be passive. I inject: 'What if Jira cuts pricing by 50%?' The system **fires a live Tavily search on this specific scenario**, then NVIDIA Nemotron evaluates the shockwave — the Moat drops from 75 to 61, competitor nodes glow red, moat pillars show disruption badges, and entity-specific counter-tactics appear. This is due diligence as a simulation engine."* |
+| **2:00 - 2:30**<br>*(Node Interrogator — Live Nemotron on Demand)* | Reset war-game → Click architecture node → Inspector Drawer opens → Switch to **Chat tab** → Click quick-prompt **`Show me exact code`** → Nemotron responds in context. | *"Our second breakthrough: **Interrogate the Node**. When a CTO clicks an architecture node, they get surgical follow-up — scoped strictly to this node's context. Watch: NVIDIA Nemotron generates production-ready TypeScript and CRDT synchronization patterns, cited back to Linear's engineering blog. This is live GPU inference on demand, answering only what this node knows."* |
+| **2:30 - 3:00**<br>*(Head-to-Head Clash & Export)* | Type **`Linear vs Jira`** → Analyze → Show Dual-Root Graph → Click **`🥊 Clash Battle Card`** → Switch to **Dossier tab** → Show **Export `.md`** and **Export MCP** buttons. | *"Finally — query 'Linear vs Jira' for our **Head-to-Head Clash Canvas**: a dual-root gravitational graph with a contested center cluster. The Clash Battle Card opens a dimension-by-dimension radar with actionable tactical wedges.<br><br>Every analysis is 1-click exportable to an Executive Markdown Dossier or an official **Model Context Protocol MCP bundle** for Cursor and Claude Desktop.<br><br>OmniBrief: built with Next.js 16, NVIDIA Nemotron-3.5-Lightning on Nebius Token Factory, and 3× parallel Tavily AI Search — the complete hackathon intelligence stack. Thank you."* |
 

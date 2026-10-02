@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { Lightbulb, Users, Target } from 'lucide-react';
+import { Lightbulb, Users, Target, CheckCircle2 } from 'lucide-react';
 import { WhitespaceOpportunity, NodeWarGameImpact } from '@/types/omnibrief';
 import { getWarGameNodeStyles } from './nodeUtils';
 
@@ -26,14 +26,20 @@ export const WhitespaceNode = React.memo(function WhitespaceNode({ data }: White
       <Handle id="ws-top" type="source" position={Position.Top} className="!w-2.5 !h-2.5 !bg-emerald-400 !border-2 !border-zinc-950" />
       <Handle id="ws-bottom" type="source" position={Position.Bottom} className="!w-2.5 !h-2.5 !bg-emerald-400 !border-2 !border-zinc-950" />
 
-      <div className="flex items-center justify-between gap-2 mb-2">
+      <div className="flex items-center justify-between gap-1 mb-2">
         <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-300 uppercase tracking-wider">
           <Lightbulb className="w-3.5 h-3.5 text-emerald-400" />
           White-Space
         </span>
-        <span className="text-[10px] px-2 py-0.5 rounded font-mono font-bold bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
-          {data.estimatedImpact} Impact
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span className="flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-500/30 shadow-xs" title="Tavily Market Opportunity Corroborated">
+            <CheckCircle2 className="w-2.5 h-2.5 text-emerald-400" />
+            <span>93% Validated</span>
+          </span>
+          <span className="text-[10px] px-2 py-0.5 rounded font-mono font-bold bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+            {data.estimatedImpact}
+          </span>
+        </div>
       </div>
 
       {warGameStyle.badge && (

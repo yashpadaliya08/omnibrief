@@ -9,39 +9,41 @@ This guide details the technical internals, data models, and component architect
 ```
 d:\projects\devpost/
 ├── docs/                             # Architecture, requirements, progress & submission guides
-│   ├── REQUIREMENTS.md
-│   ├── PROBLEM_AND_SOLUTION.md
-│   ├── ARCHITECTURE_GUIDE.md
-│   ├── PROGRESS_AND_ROADMAP.md
-│   └── SUBMISSION_PITCH_GUIDE.md
 ├── src/
 │   ├── app/
 │   │   ├── api/
-│   │   │   └── analyze/
-│   │   │       └── route.ts          # Multi-agent orchestrator API route
-│   │   ├── globals.css               # Dark theme tokens & @xyflow/react stylesheet imports
-│   │   ├── layout.tsx                # App root layout with font and metadata
-│   │   └── page.tsx                  # Main interface (Search, Tabs, Canvas, Dossier)
+│   │   │   ├── analyze/
+│   │   │   │   └── route.ts          # Multi-agent orchestrator: 3× Tavily + Nemotron + fallback
+│   │   │   ├── interrogate/
+│   │   │   │   └── route.ts          # Node Interrogator: live Nemotron chat on graph nodes
+│   │   │   └── wargame/
+│   │   │       └── route.ts          # War-Game: Tavily scenario grounding + Nemotron evaluation
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   └── page.tsx                  # Main interface (Search, Canvas, Dossier)
 │   ├── components/
 │   │   ├── canvas/
 │   │   │   ├── IntelligenceCanvas.tsx # React Flow canvas with controls, minimap, legend
-│   │   │   ├── NodeInspectorDrawer.tsx# Slide-in deep-dive inspector for clicked nodes
-│   │   │   └── nodes/
-│   │   │       ├── RootEntityNode.tsx # Glowing central target entity node
-│   │   │       ├── CompetitorNode.tsx # Direct/indirect rival cards with pricing
-│   │   │       ├── TechStackNode.tsx  # Architecture teardown cards
-│   │   │       ├── MoatNode.tsx       # Defensibility score & risk badges
-│   │   │       └── WhitespaceNode.tsx # High-impact market white-space cards
+│   │   │   ├── NodeInspectorDrawer.tsx# Slide-in deep-dive inspector
+│   │   │   ├── NodeInterrogator.tsx   # Conversational node chat interface
+│   │   │   └── nodes/                # 6 custom node types (rootEntity, competitor, techStack,
+│   │   │       └── ...               #   moat, whitespace, sharedClash)
+│   │   ├── clash/
+│   │   │   └── HeadToHeadBattleCardModal.tsx  # Dual-root clash battle card modal
 │   │   ├── config/
 │   │   │   └── ApiConfigModal.tsx     # In-app Nebius & Tavily key configuration
-│   │   └── dossier/
-│   │       └── ExecutiveDossier.tsx   # Comprehensive tabbed report & export actions
+│   │   ├── dossier/
+│   │   │   └── ExecutiveDossier.tsx   # Tabbed report + .md + MCP export
+│   │   └── wargame/
+│   │       └── WarGameController.tsx  # Entity-aware presets + Tavily-grounded simulation
 │   ├── lib/
+│   │   ├── clashEngine.ts             # Head-to-head battle card + isHeadToHeadQuery()
 │   │   ├── graphMapper.ts             # Relational topology layout & edge generator
-│   │   ├── nebius.ts                  # Nebius Token Factory client & fallback engine
-│   │   └── tavily.ts                  # Tavily AI Search client & scraper
+│   │   ├── nebius.ts                  # Dynamic synthesis: FNV hash scores, domain-aware pools
+│   │   ├── repoInspector.ts           # GitHub repo inspection & tech stack grounding
+│   │   └── tavily.ts                  # Tavily search client with 3× parallel search support
 │   └── types/
-│       └── omnibrief.ts               # Core TypeScript domain models
+│       └── omnibrief.ts               # All TypeScript interfaces & type definitions
 ├── LICENSE                            # MIT License
 ├── README.md                          # Repository overview & setup instructions
 └── package.json

@@ -4,7 +4,7 @@ import { callNebiusNemotron, generateSynthesizedReport, OFFICIAL_NEBIUS_MODEL, n
 import { isGitHubRepoUrl } from '@/lib/repoInspector';
 import { IntelligenceReport } from '@/types/omnibrief';
 
-// Server-side in-memory cache to eliminate duplicate network calls and reduce token burn
+// Server-side in-memory cache — reduces duplicate token burn in local dev
 interface CacheEntry {
   report: IntelligenceReport;
   timestamp: number;
@@ -39,6 +39,40 @@ function extractJsonFromModelOutput(raw: string): Record<string, any> | null {
   return null;
 }
 
+// Run 3 Tavily queries in parallel for richer grounding context
+async function runMultiQuerySearch(entity: string, query: string, tavilyApiKey?: string) {
+  const repoCheck = isGitHubRepoUrl(query);
+  const baseEntity = repoCheck.isRepo ? repoCheck.repo : entity;
+
+  const queries = [
+    repoCheck.isRepo
+      ? `${baseEntity} repository architecture competitors market 2026`
+      : `${baseEntity} competitors pricing market share 2026`,
+    `${baseEntity} technology architecture engineering stack`,
+    `${baseEntity} enterprise compliance data sovereignty risks 2026`,
+  ];
+
+  try {
+    const results = await Promise.all(
+      queries.map((q) => searchTavily(q, tavilyApiKey).catch(() => ({ sources: [], rawQuery: q })))
+    );
+
+    // Merge and deduplicate by URL
+    const seen = new Set<string>();
+    const merged = results.flatMap((r) => r.sources).filter((s) => {
+      if (seen.has(s.url)) return false;
+      seen.add(s.url);
+      return true;
+    });
+
+    return { sources: merged, rawQueries: queries };
+  } catch {
+    // Graceful fallback to single query
+    const single = await searchTavily(query, tavilyApiKey);
+    return { sources: single.sources, rawQueries: [query] };
+  }
+}
+
 export async function POST(req: NextRequest) {
   const startTime = Date.now();
   try {
@@ -49,11 +83,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Query parameter is required' }, { status: 400 });
     }
 
-    const cleanQuery = query.trim();
-    const effectiveModel = normalizeNebiusModel(modelName || process.env.NEBIUS_MODEL || OFFICIAL_NEBIUS_MODEL);
-    const cacheKey = `${cleanQuery.toLowerCase()}_${effectiveModel}_${Boolean(nebiusApiKey)}`;
+    // Input safety guard
+    const cleanQuery = query.trim().slice(0, 500);
 
-    // Check cache (only serve cache if it's already live GPU mode or user has no keys)
+    const effectiveModel = normalizeNebiusModel(modelName || process.env.NEBIUS_MODEL || OFFICIAL_NEBIUS_MODEL);
+    const cacheKey = `${cleanQuery.toLowerCase()}_${effectiveModel}_${Boolean(nebiusApiKey || process.env.NEBIUS_API_KEY)}`;
+
+    // Check cache
     const cached = REPORT_CACHE.get(cacheKey);
     const hasKey = Boolean(nebiusApiKey || process.env.NEBIUS_API_KEY);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
@@ -65,13 +101,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const repoCheck = isGitHubRepoUrl(cleanQuery);
-    const searchQuery = repoCheck.isRepo
-      ? `${repoCheck.repo} autonomous market architecture due diligence competitors 2026`
-      : cleanQuery;
-
-    // Stage 1: Scout Agent - Real-time Tavily search
-    const { sources, rawQuery } = await searchTavily(searchQuery, tavilyApiKey);
+    // Stage 1: Multi-query Scout Agent — 3 parallel Tavily searches
+    const { sources, rawQueries } = await runMultiQuerySearch(cleanQuery, cleanQuery, tavilyApiKey || process.env.TAVILY_API_KEY);
 
     // Stage 2 & 3: Reasoning & Critic Agents on Nebius Token Factory
     let report: IntelligenceReport | null = null;
@@ -79,179 +110,62 @@ export async function POST(req: NextRequest) {
     if (hasKey) {
       const systemPrompt = `You are OmniBrief, an elite multi-agent market & technical due-diligence engine powered by NVIDIA Nemotron on Nebius Token Factory.
 Analyze "${cleanQuery}" in depth.
-CRITICAL INSTRUCTION: Respond ONLY with a raw JSON object. Do NOT output ANY internal thoughts, reasoning steps, or conversational phrases like "Here's a thinking process:". 
+CRITICAL INSTRUCTION: Respond ONLY with a raw JSON object. Do NOT output ANY internal thoughts, reasoning steps, or conversational phrases.
 Your response must begin with '{' and end with '}'. Be concise in each field so the entire JSON is complete and valid.
+
+IMPORTANT: Node counts must vary based on actual market structure:
+- "competitors": 2 to 6 items (reflect actual competitive fragmentation)
+- "techStackAnalysis": 3 to 5 items (reflect actual architecture complexity)
+- "marketWhitespace": 2 to 4 items (reflect actual opportunity surface)
+- "threatMoatMatrix": EXACTLY 4 items (these are fixed framework pillars)
+
+Moat scores must reflect ACTUAL characteristics of "${cleanQuery}", NOT generic defaults. Scores range 52-98.
 
 Schema:
 {
-  "targetEntity": "${cleanQuery}",
-  "tagline": "One-line value proposition",
-  "verdictScore": 85,
+  "targetEntity": "Precise entity name",
+  "tagline": "One-line specific value proposition for this entity",
+  "verdictScore": 78,
   "moatRubric": {
-    "compositeScore": 85,
-    "formulaExplanation": "Weighted sum of 4 defensibility pillars",
-    "dataGravity": { "name": "Data Gravity", "score": 85, "weight": 0.3, "pointsContributed": 25.5, "evidence": "data evidence", "riskSummary": "data risks" },
-    "switchingCosts": { "name": "Switching Costs", "score": 90, "weight": 0.3, "pointsContributed": 27.0, "evidence": "switching evidence", "riskSummary": "switching risks" },
-    "regulatoryCompliance": { "name": "Sovereignty & Compliance", "score": 75, "weight": 0.2, "pointsContributed": 15.0, "evidence": "compliance evidence", "riskSummary": "compliance risks" },
-    "networkEffects": { "name": "Network Effects", "score": 88, "weight": 0.2, "pointsContributed": 17.6, "evidence": "network evidence", "riskSummary": "network risks" }
+    "compositeScore": 78,
+    "formulaExplanation": "Weighted sum showing arithmetic",
+    "dataGravity": { "name": "Data Gravity & History", "score": 82, "weight": 0.3, "pointsContributed": 24.6, "evidence": "Specific data lock-in evidence for this entity", "riskSummary": "Specific data portability risk" },
+    "switchingCosts": { "name": "Switching Costs & Muscle Memory", "score": 85, "weight": 0.3, "pointsContributed": 25.5, "evidence": "Specific switching cost evidence for this entity", "riskSummary": "Specific switching risk" },
+    "regulatoryCompliance": { "name": "Sovereignty & Compliance", "score": 68, "weight": 0.2, "pointsContributed": 13.6, "evidence": "Specific compliance evidence for this entity", "riskSummary": "Specific regulatory risk" },
+    "networkEffects": { "name": "Network & Ecosystem Effects", "score": 75, "weight": 0.2, "pointsContributed": 15.0, "evidence": "Specific network effect evidence for this entity", "riskSummary": "Specific network risk" }
   },
   "verificationMetrics": {
-    "totalClaimsChecked": 12,
-    "verifiedGroundedClaims": 11,
-    "uncorroboratedClaims": 1,
-    "confidencePercentage": 92,
-    "formula": "11/12 claims grounded"
+    "totalClaimsChecked": 14,
+    "verifiedGroundedClaims": 12,
+    "uncorroboratedClaims": 2,
+    "confidencePercentage": 86,
+    "formula": "12/14 claims grounded = 86%"
   },
-  "executiveSummary": "2-sentence executive investment thesis",
+  "executiveSummary": "2-3 sentence specific investment thesis for this entity",
   "competitors": [
-    {
-      "id": "comp_1",
-      "name": "Direct Competitor 1 Name",
-      "marketShare": "Market share",
-      "pricingModel": "Pricing model",
-      "pricingEstimate": "$10 - $25 / user / mo",
-      "category": "direct",
-      "lastVerified": "October 2026",
-      "status": "active",
-      "strengths": ["Key strength 1", "Key strength 2"],
-      "weaknesses": ["Key weakness 1", "Key weakness 2"]
-    },
-    {
-      "id": "comp_2",
-      "name": "Direct Competitor 2 Name",
-      "marketShare": "Market share",
-      "pricingModel": "Pricing model",
-      "pricingEstimate": "$8 - $16 / user / mo",
-      "category": "direct",
-      "lastVerified": "October 2026",
-      "status": "active",
-      "strengths": ["Key strength 1"],
-      "weaknesses": ["Key weakness 1"]
-    },
-    {
-      "id": "comp_3",
-      "name": "Emerging Rival Name",
-      "marketShare": "Market share",
-      "pricingModel": "Pricing model",
-      "pricingEstimate": "Usage-based tier",
-      "category": "direct",
-      "lastVerified": "October 2026",
-      "status": "active",
-      "strengths": ["Key strength 1"],
-      "weaknesses": ["Key weakness 1"]
-    }
+    { "id": "comp_1", "name": "SPECIFIC Competitor Name", "marketShare": "Specific market position", "pricingModel": "Specific pricing model", "pricingEstimate": "$X - $Y / user / mo", "category": "direct", "lastVerified": "October 2026", "status": "active", "strengths": ["Specific strength 1", "Specific strength 2"], "weaknesses": ["Specific weakness 1"] }
   ],
   "techStackAnalysis": [
-    {
-      "id": "tech_1",
-      "component": "Data Layer & Storage",
-      "competitorChoice": "Competitor storage stack",
-      "recommendedOpenStack": "Recommended modern open stack on Nebius",
-      "whyItMatters": "Why this architectural decision is critical",
-      "scalabilityRating": 5
-    },
-    {
-      "id": "tech_2",
-      "component": "Realtime Transport & Sync",
-      "competitorChoice": "Traditional polling or cloud lock-in",
-      "recommendedOpenStack": "Decoupled real-time WebSocket protocol",
-      "whyItMatters": "Concurrency and latency benefits",
-      "scalabilityRating": 5
-    },
-    {
-      "id": "tech_3",
-      "component": "Compute & Inference Cluster",
-      "competitorChoice": "Centralized cloud monolith",
-      "recommendedOpenStack": "NVIDIA Nemotron on Nebius GPU cluster",
-      "whyItMatters": "Sub-second token throughput and data sovereignty",
-      "scalabilityRating": 4
-    },
-    {
-      "id": "tech_4",
-      "component": "Edge Routing & Zero-Trust Auth",
-      "competitorChoice": "Regional centralized load balancers",
-      "recommendedOpenStack": "Global edge workers and distributed tokens",
-      "whyItMatters": "Global distribution and security",
-      "scalabilityRating": 4
-    }
+    { "id": "tech_1", "component": "Specific Component Name", "competitorChoice": "What this entity or competitors use", "recommendedOpenStack": "Specific recommended open stack", "whyItMatters": "Why this decision matters for this entity specifically", "scalabilityRating": 5 }
   ],
   "threatMoatMatrix": [
-    {
-      "id": "moat_1",
-      "factor": "Data Gravity & History",
-      "moatStrengthScore": 85,
-      "moatStrengthLevel": "Dominant",
-      "externalThreatLevel": "Low",
-      "weightPercentage": 30,
-      "pointContribution": 25.5,
-      "details": "Specific data lock-in and switching hurdles",
-      "mitigation": "Strategic move to dislodge this moat"
-    },
-    {
-      "id": "moat_2",
-      "factor": "Switching Costs & Muscle Memory",
-      "moatStrengthScore": 90,
-      "moatStrengthLevel": "Dominant",
-      "externalThreatLevel": "Low",
-      "weightPercentage": 30,
-      "pointContribution": 27.0,
-      "details": "Daily user habit and workflow friction",
-      "mitigation": "Tactical keyboard/API migration bridge"
-    },
-    {
-      "id": "moat_3",
-      "factor": "Sovereignty & Compliance",
-      "moatStrengthScore": 75,
-      "moatStrengthLevel": "Moderate",
-      "externalThreatLevel": "Elevated",
-      "weightPercentage": 20,
-      "pointContribution": 15.0,
-      "details": "Regulated enterprise compliance exposure",
-      "mitigation": "Sovereign on-prem / VPC Nebius Cloud deployment"
-    },
-    {
-      "id": "moat_4",
-      "factor": "Network & Ecosystem Effects",
-      "moatStrengthScore": 88,
-      "moatStrengthLevel": "Strong",
-      "externalThreatLevel": "Medium",
-      "weightPercentage": 20,
-      "pointContribution": 17.6,
-      "details": "Marketplace and third-party developer integrations",
-      "mitigation": "Open plugin standard and webhook ecosystem"
-    }
+    { "id": "moat_1", "factor": "Data Gravity & History", "moatStrengthScore": 82, "moatStrengthLevel": "Strong", "externalThreatLevel": "Medium", "weightPercentage": 30, "pointContribution": 24.6, "details": "Specific data lock-in details for this entity", "mitigation": "Specific strategic move to counter this moat" },
+    { "id": "moat_2", "factor": "Switching Costs & Muscle Memory", "moatStrengthScore": 85, "moatStrengthLevel": "Dominant", "externalThreatLevel": "Low", "weightPercentage": 30, "pointContribution": 25.5, "details": "Specific switching cost details", "mitigation": "Specific migration strategy" },
+    { "id": "moat_3", "factor": "Sovereignty & Compliance", "moatStrengthScore": 68, "moatStrengthLevel": "Moderate", "externalThreatLevel": "Elevated", "weightPercentage": 20, "pointContribution": 13.6, "details": "Specific compliance exposure details", "mitigation": "Sovereign on-prem / VPC deployment strategy" },
+    { "id": "moat_4", "factor": "Network & Ecosystem Effects", "moatStrengthScore": 75, "moatStrengthLevel": "Strong", "externalThreatLevel": "Medium", "weightPercentage": 20, "pointContribution": 15.0, "details": "Specific ecosystem network details", "mitigation": "Open plugin and webhook ecosystem strategy" }
   ],
   "marketWhitespace": [
-    {
-      "id": "ws_1",
-      "opportunity": "Major Unmet Market Opportunity 1",
-      "addressableAudience": "Target underserved buyer persona",
-      "strategicAngle": "How to capture this wedge",
-      "estimatedImpact": "Transformative"
-    },
-    {
-      "id": "ws_2",
-      "opportunity": "Major Unmet Market Opportunity 2",
-      "addressableAudience": "Target underserved buyer persona",
-      "strategicAngle": "How to capture this wedge",
-      "estimatedImpact": "Very High"
-    },
-    {
-      "id": "ws_3",
-      "opportunity": "Major Unmet Market Opportunity 3",
-      "addressableAudience": "Target underserved buyer persona",
-      "strategicAngle": "How to capture this wedge",
-      "estimatedImpact": "High"
-    }
+    { "id": "ws_1", "opportunity": "Specific major unmet opportunity", "addressableAudience": "Specific target buyer", "strategicAngle": "Specific how to capture this", "estimatedImpact": "Transformative" }
   ],
-  "limitationsAndRisks": ["Risk 1", "Risk 2"]
+  "limitationsAndRisks": ["Specific risk 1 for this entity", "Specific risk 2"]
 }`;
 
       const userPrompt = `Target Query: "${cleanQuery}"
-Grounding context from Tavily live search:
-${sources.map((s, idx) => `[Source ${idx + 1} - ${s.title}]: ${s.content}`).join('\n\n')}
+Grounding context from ${rawQueries.length} parallel Tavily live searches (${sources.length} citations):
+${sources.slice(0, 12).map((s, idx) => `[Source ${idx + 1} - ${s.title}]: ${s.content}`).join('\n\n')}
 
-Perform deep technical due-diligence, architecture trade-off evaluation, and calculate a transparent 4-pillar defensibility rubric (Data Gravity, Switching Costs, Sovereignty/Compliance, Network Effects). Emphasize open architecture on Nebius GPU infrastructure and NVIDIA models.`;
+Perform deep technical due-diligence, architecture trade-off evaluation, and calculate a transparent 4-pillar defensibility rubric (Data Gravity, Switching Costs, Sovereignty/Compliance, Network Effects).
+Return VARIABLE competitor count (2-6) based on actual market fragmentation. Emphasize open architecture on Nebius GPU infrastructure and NVIDIA models.`;
 
       const { rawJson, latencyMs: nebiusLatency } = await callNebiusNemotron(userPrompt, systemPrompt, nebiusApiKey, effectiveModel);
 
@@ -265,10 +179,10 @@ Perform deep technical due-diligence, architecture trade-off evaluation, and cal
           report = {
             id: `rep_${Date.now()}`,
             query: cleanQuery,
-            targetEntity: parsed.targetEntity || cleanQuery,
-            tagline: parsed.tagline || 'Autonomous Due-Diligence Brief',
+            targetEntity: parsed.targetEntity || fallbackSample.targetEntity,
+            tagline: parsed.tagline || fallbackSample.tagline,
             createdAt: new Date().toISOString(),
-            verdictScore: parsed.verdictScore ?? parsed.moatRubric?.compositeScore ?? 85,
+            verdictScore: parsed.verdictScore ?? parsed.moatRubric?.compositeScore ?? fallbackSample.verdictScore,
             moatRubric: parsed.moatRubric || fallbackSample.moatRubric,
             verificationMetrics: parsed.verificationMetrics || fallbackSample.verificationMetrics,
             executiveSummary: parsed.executiveSummary || fallbackSample.executiveSummary,
@@ -278,7 +192,7 @@ Perform deep technical due-diligence, architecture trade-off evaluation, and cal
             marketWhitespace: (Array.isArray(parsed.marketWhitespace) && parsed.marketWhitespace.length > 0) ? parsed.marketWhitespace : fallbackSample.marketWhitespace,
             citations: sources,
             nebiusModelUsed: effectiveModel,
-            tavilyQueriesExecuted: [rawQuery],
+            tavilyQueriesExecuted: rawQueries,
             limitationsAndRisks: parsed.limitationsAndRisks || fallbackSample.limitationsAndRisks,
             executionMode: 'Live Nebius Token Factory',
             measuredLatencyMs: nebiusLatency,
@@ -288,7 +202,7 @@ Perform deep technical due-diligence, architecture trade-off evaluation, and cal
                 id: 's1',
                 agent: 'Scout Agent (Tavily AI Search)',
                 status: 'completed',
-                message: `Retrieved ${sources.length} live citations for "${cleanQuery}".`,
+                message: `Executed ${rawQueries.length} parallel deep web searches. Retrieved ${sources.length} live citations for "${cleanQuery}".`,
                 timestamp: Date.now() - 3200,
                 durationMs: 1100,
               },
@@ -296,7 +210,7 @@ Perform deep technical due-diligence, architecture trade-off evaluation, and cal
                 id: 's2',
                 agent: `Reasoning Agent (${effectiveModel.split('/').pop()})`,
                 status: 'completed',
-                message: `Synthesized architecture and defensibility analysis via Nebius Token Factory GPU.`,
+                message: `Synthesized architecture and defensibility analysis via Nebius Token Factory GPU in ${nebiusLatency}ms.`,
                 timestamp: Date.now() - 1800,
                 durationMs: nebiusLatency,
               },
@@ -304,7 +218,7 @@ Perform deep technical due-diligence, architecture trade-off evaluation, and cal
                 id: 's3',
                 agent: 'Critic & Verification Agent',
                 status: 'completed',
-                message: `Verified citations against claims: ${parsed.verificationMetrics?.confidencePercentage ?? 92}% confidence.`,
+                message: `Verified citations against claims: ${parsed.verificationMetrics?.confidencePercentage ?? fallbackSample.verificationMetrics.confidencePercentage}% confidence.`,
                 timestamp: Date.now() - 700,
                 durationMs: 450,
               },
@@ -312,19 +226,19 @@ Perform deep technical due-diligence, architecture trade-off evaluation, and cal
                 id: 's4',
                 agent: 'Graph Topology Compiler (@xyflow/react)',
                 status: 'completed',
-                message: 'Compiled relational XYFlow node graph topology.',
+                message: `Compiled XYFlow node graph: 1 root, ${(Array.isArray(parsed.competitors) ? parsed.competitors.length : 3)} competitors, ${(Array.isArray(parsed.techStackAnalysis) ? parsed.techStackAnalysis.length : 4)} architecture, 4 moats, ${(Array.isArray(parsed.marketWhitespace) ? parsed.marketWhitespace.length : 3)} whitespace.`,
                 timestamp: Date.now(),
                 durationMs: 120,
               },
             ],
           };
         } catch (parseError) {
-          console.error('Failed to parse Nebius JSON output, falling back to deterministic synthesis:', parseError);
+          console.error('Failed to parse Nebius JSON output, falling back to dynamic synthesis:', parseError);
         }
       }
     }
 
-    // Fallback synthesis if no key or parsing failed
+    // Fallback: fully dynamic synthesis (no hardcoded values)
     if (!report) {
       report = generateSynthesizedReport(cleanQuery, sources, effectiveModel, false, Date.now() - startTime);
     }
@@ -332,10 +246,11 @@ Perform deep technical due-diligence, architecture trade-off evaluation, and cal
     // Cache the report
     REPORT_CACHE.set(cacheKey, { report, timestamp: Date.now() });
 
-    // Evict old cache entries if map exceeds 50 items
-    if (REPORT_CACHE.size > 50) {
+    // LRU-style eviction: keep map under 50 entries
+    while (REPORT_CACHE.size > 50) {
       const oldestKey = REPORT_CACHE.keys().next().value;
       if (oldestKey) REPORT_CACHE.delete(oldestKey);
+      else break;
     }
 
     const latencyMs = Date.now() - startTime;
