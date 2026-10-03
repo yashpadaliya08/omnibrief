@@ -4,13 +4,23 @@ import { callNebiusNemotron, generateSynthesizedReport, OFFICIAL_NEBIUS_MODEL, n
 import { isGitHubRepoUrl } from '@/lib/repoInspector';
 import { IntelligenceReport } from '@/types/omnibrief';
 
-// Server-side in-memory cache — reduces duplicate token burn in local dev
+// Server-side bounded cache — reduces duplicate token burn while preventing memory bloat (CWE-400 fix)
 interface CacheEntry {
   report: IntelligenceReport;
   timestamp: number;
 }
 const REPORT_CACHE = new Map<string, CacheEntry>();
-const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const MAX_CACHE_ENTRIES = 20; // Strictly bound memory footprint
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes (reduced from 10m to prevent memory pressure)
+
+function pruneExpiredCache() {
+  const now = Date.now();
+  for (const [key, entry] of REPORT_CACHE.entries()) {
+    if (now - entry.timestamp > CACHE_TTL_MS) {
+      REPORT_CACHE.delete(key);
+    }
+  }
+}
 
 // Aggressive sanitizer: fixes the most common Nemotron JSON output failures
 function sanitizeJson(raw: string): string {
@@ -132,12 +142,16 @@ export async function POST(req: NextRequest) {
     // Check cache
     const cached = REPORT_CACHE.get(cacheKey);
     const hasKey = Boolean(nebiusApiKey || process.env.NEBIUS_API_KEY);
-    if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
-      if (!hasKey || cached.report.executionMode === 'Live Nebius Token Factory') {
-        return NextResponse.json(
-          { report: cached.report, cached: true, latencyMs: Date.now() - startTime },
-          { headers: { 'X-Cache': 'HIT', 'X-Latency-Ms': String(Date.now() - startTime) } }
-        );
+    if (cached) {
+      if (Date.now() - cached.timestamp < CACHE_TTL_MS) {
+        if (!hasKey || cached.report.executionMode === 'Live Nebius Token Factory') {
+          return NextResponse.json(
+            { report: cached.report, cached: true, latencyMs: Date.now() - startTime },
+            { headers: { 'X-Cache': 'HIT', 'X-Latency-Ms': String(Date.now() - startTime) } }
+          );
+        }
+      } else {
+        REPORT_CACHE.delete(cacheKey); // Evict expired entry immediately
       }
     }
 
@@ -283,15 +297,14 @@ Return VARIABLE competitor count (2-6) based on actual market fragmentation. Emp
       report = generateSynthesizedReport(cleanQuery, sources, effectiveModel, false, Date.now() - startTime);
     }
 
-    // Cache the report
-    REPORT_CACHE.set(cacheKey, { report, timestamp: Date.now() });
-
-    // LRU-style eviction: keep map under 50 entries
-    while (REPORT_CACHE.size > 50) {
+    // Cache the report with active bounded eviction (CWE-400 fix)
+    pruneExpiredCache();
+    while (REPORT_CACHE.size >= MAX_CACHE_ENTRIES) {
       const oldestKey = REPORT_CACHE.keys().next().value;
       if (oldestKey) REPORT_CACHE.delete(oldestKey);
       else break;
     }
+    REPORT_CACHE.set(cacheKey, { report, timestamp: Date.now() });
 
     const latencyMs = Date.now() - startTime;
     return NextResponse.json(

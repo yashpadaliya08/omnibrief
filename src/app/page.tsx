@@ -54,9 +54,19 @@ export default function HomePage() {
 
   const [currentStepIndex, setCurrentStepIndex] = useState(4);
 
-  // Load saved credentials from localStorage
+  // Load saved credentials from sessionStorage (CWE-312 security fix: avoid persistent localStorage)
   useEffect(() => {
-    const saved = localStorage.getItem('omnibrief_config');
+    // Check sessionStorage first; migrate and scrub from localStorage if found
+    let saved = sessionStorage.getItem('omnibrief_config');
+    if (!saved && typeof window !== 'undefined') {
+      const legacyLocal = localStorage.getItem('omnibrief_config');
+      if (legacyLocal) {
+        saved = legacyLocal;
+        sessionStorage.setItem('omnibrief_config', legacyLocal);
+        localStorage.removeItem('omnibrief_config'); // Purge cleartext keys from disk
+      }
+    }
+
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -76,7 +86,9 @@ export default function HomePage() {
 
   const handleSaveConfig = (newConfig: { nebiusApiKey: string; tavilyApiKey: string; modelName: string }) => {
     setConfig(newConfig);
-    localStorage.setItem('omnibrief_config', JSON.stringify(newConfig));
+    // Security: store in sessionStorage to prevent persistent XSS key extraction
+    sessionStorage.setItem('omnibrief_config', JSON.stringify(newConfig));
+    localStorage.removeItem('omnibrief_config');
   };
 
   const handleApplyWarGame = (scenario: import('@/types/omnibrief').WarGameScenario) => {
