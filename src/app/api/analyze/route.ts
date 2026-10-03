@@ -12,30 +12,70 @@ interface CacheEntry {
 const REPORT_CACHE = new Map<string, CacheEntry>();
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
+// Aggressive sanitizer: fixes the most common Nemotron JSON output failures
+function sanitizeJson(raw: string): string {
+  return raw
+    // Remove markdown code fences
+    .replace(/^```(?:json)?\s*/im, '')
+    .replace(/\s*```$/m, '')
+    // Remove trailing commas before } or ] (invalid JSON)
+    .replace(/,\s*([}\]])/g, '$1')
+    // Remove any control characters except whitespace
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+    // Fix bad Unicode escape sequences like \u followed by non-hex
+    .replace(/\\u(?![0-9a-fA-F]{4})/g, '\\\\u')
+    // Collapse multiple consecutive newlines inside strings to space
+    .replace(/"\s*\n\s*"/g, '" "')
+    .trim();
+}
+
 function extractJsonFromModelOutput(raw: string): Record<string, any> | null {
   if (!raw) return null;
   const trimmed = raw.trim();
+
+  // Attempt 1: direct parse
   try {
     const direct = JSON.parse(trimmed);
     if (direct && typeof direct === 'object') return direct;
   } catch {}
 
+  // Attempt 2: sanitized direct parse
+  try {
+    const sanitized = sanitizeJson(trimmed);
+    const fromSanitized = JSON.parse(sanitized);
+    if (fromSanitized && typeof fromSanitized === 'object') return fromSanitized;
+  } catch {}
+
+  // Attempt 3: strip markdown code block then parse
   const codeBlockMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
   if (codeBlockMatch) {
     try {
       const fromBlock = JSON.parse(codeBlockMatch[1].trim());
       if (fromBlock && typeof fromBlock === 'object') return fromBlock;
     } catch {}
+    // Attempt 3b: sanitize the code block content
+    try {
+      const fromBlock = JSON.parse(sanitizeJson(codeBlockMatch[1].trim()));
+      if (fromBlock && typeof fromBlock === 'object') return fromBlock;
+    } catch {}
   }
 
+  // Attempt 4: extract first { … last } substring and parse
   const firstBrace = trimmed.indexOf('{');
   const lastBrace = trimmed.lastIndexOf('}');
   if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    const extracted = trimmed.substring(firstBrace, lastBrace + 1);
     try {
-      const fromBraces = JSON.parse(trimmed.substring(firstBrace, lastBrace + 1));
+      const fromBraces = JSON.parse(extracted);
+      if (fromBraces && typeof fromBraces === 'object') return fromBraces;
+    } catch {}
+    // Attempt 4b: sanitize the extracted substring
+    try {
+      const fromBraces = JSON.parse(sanitizeJson(extracted));
       if (fromBraces && typeof fromBraces === 'object') return fromBraces;
     } catch {}
   }
+
   return null;
 }
 

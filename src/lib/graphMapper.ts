@@ -67,6 +67,10 @@ export function buildGraphFromReport(report: IntelligenceReport): { nodes: Node[
       targetHandle: 'comp-target',
       type: 'smoothstep',
       animated: true,
+      label: comp.category === 'indirect' ? 'adjacent threat' : 'direct rival',
+      labelStyle: { fill: '#f43f5e', fontFamily: 'monospace', fontSize: 10, fontWeight: 600 },
+      labelBgStyle: { fill: '#18080a', fillOpacity: 0.85, rx: 4, ry: 4 },
+      labelBgPadding: [4, 6],
       style: {
         stroke: compImpact?.status === 'squeezed' ? '#f43f5e' : compImpact?.status === 'strengthened' ? '#10b981' : '#f43f5e',
         strokeWidth: compImpact ? 3 : 2,
@@ -104,6 +108,10 @@ export function buildGraphFromReport(report: IntelligenceReport): { nodes: Node[
       targetHandle: 'tech-target',
       type: 'smoothstep',
       animated: true,
+      label: 'powers via',
+      labelStyle: { fill: '#06b6d4', fontFamily: 'monospace', fontSize: 10, fontWeight: 600 },
+      labelBgStyle: { fill: '#030f12', fillOpacity: 0.85, rx: 4, ry: 4 },
+      labelBgPadding: [4, 6],
       style: {
         stroke: techImpact?.status === 'strengthened' ? '#10b981' : techImpact?.status === 'squeezed' ? '#f43f5e' : '#06b6d4',
         strokeWidth: techImpact ? 3 : 2,
@@ -142,6 +150,10 @@ export function buildGraphFromReport(report: IntelligenceReport): { nodes: Node[
       targetHandle: 'moat-target',
       type: 'smoothstep',
       animated: true,
+      label: 'fortifies',
+      labelStyle: { fill: '#f59e0b', fontFamily: 'monospace', fontSize: 10, fontWeight: 600 },
+      labelBgStyle: { fill: '#100a00', fillOpacity: 0.85, rx: 4, ry: 4 },
+      labelBgPadding: [4, 6],
       style: {
         stroke: moatImpact?.status === 'strengthened' ? '#10b981' : moatImpact?.status === 'disrupted' ? '#f59e0b' : '#f59e0b',
         strokeWidth: moatImpact ? 3 : 2,
@@ -183,6 +195,10 @@ export function buildGraphFromReport(report: IntelligenceReport): { nodes: Node[
       targetHandle: 'ws-target',
       type: 'smoothstep',
       animated: true,
+      label: 'unlocks',
+      labelStyle: { fill: '#10b981', fontFamily: 'monospace', fontSize: 10, fontWeight: 600 },
+      labelBgStyle: { fill: '#001208', fillOpacity: 0.85, rx: 4, ry: 4 },
+      labelBgPadding: [4, 6],
       style: {
         stroke: wsImpact?.status === 'strengthened' ? '#10b981' : '#10b981',
         strokeWidth: wsImpact ? 3 : 2,
